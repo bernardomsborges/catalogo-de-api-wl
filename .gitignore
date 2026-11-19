@@ -42,6 +42,9 @@ server/data/api-drafts.json
 server/data/ai-embeddings.json
 server/data/ai-gaps.json
 server/data/accounts.json
+server/data/metrics.json
+server/data/setup.json
+server/data/systems.json
 
 # OpenAPI → catalog converter bundled by `npm run build` (web/src/app/core/openapi.ts)
 server/generated/
