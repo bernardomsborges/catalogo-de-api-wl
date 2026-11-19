@@ -34,7 +34,7 @@ describe('rules', () => {
 
   test('the logo is only https:// or a path of the portal', () => {
     for (const [url, ok] of [['https://cdn.exemplo.gov.br/logo.svg', true], ['/brand/logo.png', true], ['javascript:alert(1)', false], ['data:image/svg+xml,x', false], ['//outro.site/logo.png', false], ['http://inseguro/logo.png', false]]) {
-      withEnv({ LOGO_URL: url }, (b) => assert.equal(b.brand().logoUrl, ok ? url : '', url));
+      withEnv({ LOGO_URL: String(url) }, (b) => assert.equal(b.brand().logoUrl, ok ? url : '', String(url)));
     }
   });
 });

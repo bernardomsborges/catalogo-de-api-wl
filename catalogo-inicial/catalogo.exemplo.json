@@ -1,0 +1,17 @@
+[
+  {
+    "source": "https://petstore3.swagger.io/api/v3/openapi.json",
+    "category": "Exemplos",
+    "owner": "Time de exemplo",
+    "contactEmail": "apis@exemplo.gov.br",
+    "tags": ["exemplo"],
+    "status": "estavel"
+  },
+  {
+    "source": "https://petstore.swagger.io/",
+    "name": "Petstore (Swagger 2)",
+    "category": "Exemplos",
+    "status": "beta",
+    "sync": false
+  }
+]

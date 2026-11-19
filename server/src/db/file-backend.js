@@ -34,7 +34,9 @@ function writeJson(file, value) {
 async function init() {
   if (!fs.existsSync(DATA_FILE)) {
     fs.mkdirSync(path.dirname(DATA_FILE), { recursive: true });
-    fs.writeFileSync(DATA_FILE, fs.existsSync(SEED_FILE) ? fs.readFileSync(SEED_FILE, 'utf8') : '[]');
+    // With CATALOG_IMPORT the catalog starts empty and is filled by initial-import.js, not by the samples.
+    const useSeed = !process.env.CATALOG_IMPORT && fs.existsSync(SEED_FILE);
+    fs.writeFileSync(DATA_FILE, useSeed ? fs.readFileSync(SEED_FILE, 'utf8') : '[]');
   }
   apis = readJson(DATA_FILE, []);
   versions = readJson(VERSIONS_FILE, {});

@@ -1,7 +1,48 @@
-# Catálogo de APIs · Automatiza
+# Catálogo de APIs (whitelabel)
 
-Portal para descobrir, entender e integrar as APIs do Automatiza, inspirado no
-[Conecta gov.br](https://www.gov.br/conecta/catalogo/).
+Portal para descobrir, entender e integrar as APIs de uma organização, inspirado no
+[Conecta gov.br](https://www.gov.br/conecta/catalogo/). Esta é a versão **whitelabel**:
+- **Sem identidade visual própria:** paleta neutra em cinza nos temas claro e escuro, e um símbolo genérico.
+- **Identidade por variáveis de ambiente:** nome, organização, descrição e logo.
+- **Catálogo inicial:** as APIs são importadas dos documentos OpenAPI na primeira subida.
+
+## Whitelabel: a identidade do portal
+
+Tudo o que nomeia o portal vem do ambiente (`server/src/branding.js`): títulos das páginas, cabeçalho,
+rodapé, prévias de link, e-mails e os assistentes de IA.
+
+| Variável | Padrão | O que faz |
+|---|---|---|
+| `PORTAL_NAME` | `Catálogo de APIs` | Nome do portal |
+| `ORG_NAME` | — | Organização que publica as APIs. Aparece no rodapé ("Publicado por …"), na página do catálogo e para a IA |
+| `PORTAL_DESCRIPTION` | "Encontre, entenda e integre as APIs de `ORG_NAME`." | Frase da página inicial, do rodapé e das prévias |
+| `LOGO_URL` | — | Logo do cabeçalho e do rodapé, que ficam sobre fundo escuro: prefira a versão clara. Só `https://` ou um caminho do próprio portal. Sem ele, símbolo neutro + nome |
+
+O servidor entrega esses valores no `index.html` (`<meta name="portal-brand">`), e o portal os lê ao
+abrir, sem precisar de outra requisição.
+
+**Cores:** a paleta neutra fica nos tokens de `web/src/styles.scss`. Para aplicar a cor de uma
+organização, troque `--brand`, `--accent`, `--link` e `--grad-stops` no `:root` e no `dark-tokens`. As
+cores de status e dos métodos HTTP são funcionais e não dependem da marca.
+
+## Catálogo inicial
+
+`CATALOG_IMPORT` lista os documentos OpenAPI/Swagger das APIs que entram no catálogo na **primeira vez**
+que o servidor sobe, no lugar das APIs de exemplo. Aceita links (podem ser a página do Swagger UI ou do
+Redoc), arquivos ou um manifesto `.json` que define a categoria, o time, a visibilidade e outros campos
+de cada API.
+
+```bash
+CATALOG_IMPORT=catalogo-inicial/catalogo.json   # no .env
+npm run import:check                            # confere as fontes sem salvar nada
+```
+
+- APIs vindas de link já saem com a sincronização do OpenAPI ligada.
+- A importação roda uma vez só (fica registrada) e tenta de novo na próxima subida se todas as fontes falharem.
+
+Detalhes e o formato do manifesto estão em [`catalogo-inicial/README.md`](catalogo-inicial/README.md).
+Para ver funcionando, há um manifesto de exemplo com as APIs públicas de demonstração do Swagger Petstore:
+`CATALOG_IMPORT=catalogo-inicial/catalogo.exemplo.json`.
 
 ## O que tem
 
@@ -60,9 +101,11 @@ Portal para descobrir, entender e integrar as APIs do Automatiza, inspirado no
 web/      Front-end Angular 22 (standalone, signals, zoneless)
 server/   Back-end Node + Express; dados em server/data/apis.json
 shared/   Regras usadas pelos dois lados (nota da documentação), em TypeScript que o Node roda direto
+catalogo-inicial/   Manifesto e documentos OpenAPI do catálogo inicial (CATALOG_IMPORT)
+server/generated/   Conversor de OpenAPI do portal, empacotado para o servidor por `npm run build`
 ```
 
-Na primeira execução, `server/data/apis.json` é criado a partir de `server/data/seed.json` (4 APIs de exemplo).
+Na primeira execução, `server/data/apis.json` é criado a partir de `server/data/seed.json` (4 APIs de exemplo). Com `CATALOG_IMPORT`, o catálogo começa vazio e recebe as APIs da importação inicial.
 
 Para usar **PostgreSQL**, defina `DATABASE_URL`. As tabelas são criadas sozinhas e, com o banco vazio, as APIs do `apis.json` atual são importadas (credenciais, regras por endpoint e tudo mais). Todo o resto também vai para o banco (tabela `documents`): contas (pessoas, grupos e pedidos de acesso), ReceAPItos, inscrições, sincronização do OpenAPI, monitoramento, perguntas sem resposta da IA e o cache da busca. Na primeira subida, cada arquivo `.json` existente é importado, então nada se perde na troca. Com o banco, o volume `/data` só guarda os e-mails de teste (`outbox`).
 
@@ -116,7 +159,7 @@ No desenvolvimento, as variáveis podem ficar num arquivo `.env` na raiz (já ig
 | `PORT` | `3000` | Porta HTTP |
 | `TRUST_PROXY` | — | Use quando o portal fica atrás de um proxy (nginx, load balancer): sem ele, o servidor vê o IP do proxy e todo mundo divide os mesmos limites de chamadas (login, assistente, console, inscrições). Aceita o número de proxies na frente (`1` para um nginx), endereços dos proxies (`loopback`, `10.0.0.0/8, 172.16.0.0/12`) ou `true`. Evite `true` se as pessoas puderem chegar ao servidor sem passar pelo proxy: aí qualquer um forja o IP pelo cabeçalho `X-Forwarded-For` |
 | `ADMIN_EMAIL` | `admin` | E-mail do primeiro administrador, criado quando ainda não existe nenhum (`ADMIN_USER` ainda é aceito) |
-| `ADMIN_PASSWORD` | `automatiza123` | Senha desse primeiro administrador — **troque antes de publicar** (ou depois, em *Minha conta*) |
+| `ADMIN_PASSWORD` | `troque-esta-senha` | Senha desse primeiro administrador — **troque antes de publicar** (ou depois, em *Minha conta*) |
 | `OIDC_ISSUER` | — | Login com o SSO da organização (OpenID Connect), ex.: `https://login.exemplo.gov.br/realms/estado`. Sem ele, só e-mail e senha. Veja *Login com SSO* abaixo |
 | `OIDC_CLIENT_ID` / `OIDC_CLIENT_SECRET` | — | Cliente cadastrado no provedor. Sem o segredo, o catálogo entra como cliente público (só PKCE) |
 | `OIDC_TOKEN_AUTH` | `basic` | Como o segredo vai para o provedor: `basic` (`client_secret_basic`) ou `post` (`client_secret_post`) |

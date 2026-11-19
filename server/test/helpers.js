@@ -6,7 +6,7 @@ const os = require('node:os');
 const path = require('node:path');
 
 /** Variables from the developer's shell that would point the test server at real data or services. */
-const OUTSIDE = /(_FILE|_DIR|_URL)$|^LLM_|^SMTP|^ADMIN_|^SESSION_|^TRUST_PROXY$|^CORS_ORIGINS$|^OIDC_|^PASSWORD_LOGIN$|^NODE_ENV$|^LOG_/;
+const OUTSIDE = /(_FILE|_DIR|_URL)$|^LLM_|^SMTP|^ADMIN_|^SESSION_|^TRUST_PROXY$|^CORS_ORIGINS$|^OIDC_|^PASSWORD_LOGIN$|^NODE_ENV$|^LOG_|^PORTAL_|^ORG_NAME$|^CATALOG_IMPORT$/;
 
 /** Port a server listening on TCP got. */
 const portOf = (server) => /** @type {import('node:net').AddressInfo} */ (server.address()).port;

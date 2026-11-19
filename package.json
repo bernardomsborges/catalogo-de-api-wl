@@ -1,12 +1,13 @@
 {
-  "name": "catalogo-de-apis",
+  "name": "catalogo-de-apis-wl",
   "private": true,
   "description": "Catálogo de APIs whitelabel",
   "scripts": {
     "install:all": "npm --prefix server install && npm --prefix web install",
     "dev:server": "npm --prefix server run dev",
     "dev:web": "npm --prefix web start",
-    "build": "npm --prefix web run build",
+    "build": "npm --prefix web run build && npm --prefix web run build:importer",
+    "import:check": "npm --prefix server run import:check --",
     "start": "npm run build && npm --prefix server start",
     "test": "npm --prefix server test && npm --prefix web test"
   }

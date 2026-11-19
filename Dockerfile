@@ -9,6 +9,8 @@ COPY web/ ./
 # Regras compartilhadas entre portal e servidor (nota da documentação).
 COPY shared/ ../shared/
 RUN npm run build
+# The same OpenAPI → catalog conversion, for the server's initial import (CATALOG_IMPORT).
+RUN npm run build:importer
 
 # Etapa 2: só as dependências de produção do servidor.
 FROM node:24-alpine AS server-deps
@@ -26,6 +28,7 @@ WORKDIR /app
 COPY --from=server-deps /app/server/node_modules ./server/node_modules
 COPY server/package.json ./server/
 COPY server/src ./server/src
+COPY --from=web-build /app/server/generated ./server/generated
 COPY shared ./shared
 COPY server/data/seed.json ./server/data/seed.json
 COPY --from=web-build /app/web/dist/web/browser ./web/dist/web/browser

@@ -27,6 +27,14 @@ services:
       - "${PORT:-3000}:3000"
     environment:
       ADMIN_EMAIL: ${ADMIN_EMAIL:-admin}
+      # Identidade do portal (whitelabel). Vazias: "Catálogo de APIs", sem organização, símbolo neutro.
+      PORTAL_NAME: ${PORTAL_NAME:-}
+      ORG_NAME: ${ORG_NAME:-}
+      PORTAL_DESCRIPTION: ${PORTAL_DESCRIPTION:-}
+      LOGO_URL: ${LOGO_URL:-}
+      # Catálogo inicial, importado na primeira subida (veja catalogo-inicial/README.md).
+      # Ex.: CATALOG_IMPORT=catalogo-inicial/catalogo.json (a pasta é montada abaixo).
+      CATALOG_IMPORT: ${CATALOG_IMPORT:-}
       # Obrigatória: defina no arquivo .env ou no ambiente antes de subir.
       ADMIN_PASSWORD: ${ADMIN_PASSWORD:?Defina ADMIN_PASSWORD}
       # APIs, histórico de versões e rascunhos. No primeiro uso, importa /data/apis.json se existir.
@@ -52,6 +60,8 @@ services:
     volumes:
       # Com o banco, tudo fica no PostgreSQL; aqui sobram só os e-mails de teste (outbox).
       - catalogo-data:/data
+      # Manifesto e documentos do catálogo inicial (só leitura).
+      - ./catalogo-inicial:/app/catalogo-inicial:ro
     restart: unless-stopped
 
   # Backup do banco com pg_dump: um ao subir e depois a cada BACKUP_EVERY_HOURS horas, no volume

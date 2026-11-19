@@ -34,8 +34,9 @@ async function tx(fn) {
 
 /** First start on an empty database: brings in the JSON file (or the seed). */
 async function importFromFile(client) {
-  const file = fs.existsSync(DATA_FILE) ? DATA_FILE : SEED_FILE;
-  if (!fs.existsSync(file)) return 0;
+  // With CATALOG_IMPORT the samples stay out: initial-import.js fills the catalog.
+  const file = fs.existsSync(DATA_FILE) ? DATA_FILE : process.env.CATALOG_IMPORT ? null : SEED_FILE;
+  if (!file || !fs.existsSync(file)) return 0;
   const list = readJsonFile(file);
   for (const a of list) {
     const api = { ...a, revision: a.revision || 1 };

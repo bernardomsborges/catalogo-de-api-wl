@@ -217,4 +217,16 @@ async function fetchOnce(input = {}, apiId) {
   }
 }
 
-module.exports = { init, view, configure, check, markApplied, remove, summary, start, fetchOnce };
+/**
+ * Turns on the sync of an API created from `url`, with the imported document as the applied
+ * version: the next check only shows what changed after the import (initial import, see
+ * initial-import.js).
+ */
+function adopt(id, url, text) {
+  if (!/^https?:\/\//i.test(url)) return;
+  const now = new Date().toISOString();
+  entries[id] = { url, latestText: text, latestHash: hash(text), appliedText: text, appliedHash: hash(text), appliedAt: now, lastCheckedAt: now, lastError: '' };
+  persist();
+}
+
+module.exports = { init, view, configure, check, markApplied, remove, summary, start, fetchOnce, adopt };

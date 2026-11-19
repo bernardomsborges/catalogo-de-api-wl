@@ -28,6 +28,7 @@ const linkPreview = require('./link-preview');
 const metrics = require('./metrics');
 const sitemap = require('./sitemap');
 const systems = require('./systems');
+const initialImport = require('./initial-import');
 
 const PORT = Number(process.env.PORT) || 3000;
 /** The portal's public address, for absolute links (previews, sitemap). */
@@ -764,6 +765,11 @@ function started() {
   llm.check().finally(() => aiIndex.rebuild(store.list(), recipes.list()));
   store.onChange((event, api) => aiIndex.onApiChange(event, api, store.list(), recipes.list()));
   recipes.onChange(() => aiIndex.onRecipesChange(store.list(), recipes.list()));
+  // First start with CATALOG_IMPORT: the initial catalog comes in now that the server is up (initial-import.js).
+  initialImport.runIfNeeded({ store, specSync }).then(
+    (info) => info && console.log(`[importação inicial] ${info}.`),
+    (err) => console.error('[importação inicial]', err.message)
+  );
   specSync.start();
   // Health checks; going down / coming back e-mails whoever follows the API.
   health.start((apiId, previous, next, entry) => {
