@@ -2,8 +2,8 @@
 <html lang="pt-BR">
 <head>
   <meta charset="utf-8">
-  <title>Catálogo de APIs · Automatiza.MG</title>
-  <meta name="description" content="Encontre, entenda e integre as APIs do Automatiza.MG.">
+  <title>Catálogo de APIs</title>
+  <meta name="description" content="Encontre, entenda e integre as APIs disponíveis.">
   <base href="/">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <script>
@@ -13,28 +13,29 @@
       if (t === 'light' || t === 'dark') document.documentElement.dataset.theme = t;
     } catch (e) {}
   </script>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
   <link rel="icon" type="image/png" href="favicon.png">
   <link rel="apple-touch-icon" href="apple-touch-icon.png">
-  <meta name="theme-color" content="#00183b">
-  <link rel="preload" href="brand/simbolo.webp" as="image" type="image/webp" crossorigin>
+  <meta name="theme-color" content="#18181b">
+  <link rel="preload" href="brand/mark.svg" as="image" type="image/svg+xml" crossorigin>
   <style>
     /* Tela de carregamento: fica por cima até a fonte, o Angular e o catálogo estarem prontos.
        As cores acompanham o tema (claro/escuro) para não haver salto ao sumir. */
     #splash {
-      --sp-bg: #f5f8fb; --sp-a: #00183b; --sp-b: #59a1ba; --sp-c: #6a4d9f; --sp-track: #dfe6ee; --sp-text: #5d6c86;
+      --sp-bg: #fafafa; --sp-a: #18181b; --sp-b: #52525b; --sp-c: #a1a1aa; --sp-track: #e4e4e7; --sp-text: #52525b;
       position: fixed; inset: 0; z-index: 1000; display: grid; place-items: center; background: var(--sp-bg);
       transition: opacity .35s ease, visibility .35s ease;
     }
     @media (prefers-color-scheme: dark) {
-      html:not([data-theme='light']) #splash { --sp-bg: #000c1d; --sp-a: #2c6f89; --sp-b: #8cc4d8; --sp-c: #a78bdb; --sp-track: #13294a; --sp-text: #7488a6; }
+      html:not([data-theme='light']) #splash { --sp-bg: #09090b; --sp-a: #fafafa; --sp-b: #a1a1aa; --sp-c: #52525b; --sp-track: #27272a; --sp-text: #a1a1aa; }
     }
-    html[data-theme='dark'] #splash { --sp-bg: #000c1d; --sp-a: #2c6f89; --sp-b: #8cc4d8; --sp-c: #a78bdb; --sp-track: #13294a; --sp-text: #7488a6; }
+    html[data-theme='dark'] #splash { --sp-bg: #09090b; --sp-a: #fafafa; --sp-b: #a1a1aa; --sp-c: #52525b; --sp-track: #27272a; --sp-text: #a1a1aa; }
     #splash.splash-done { opacity: 0; visibility: hidden; }
     .splash-box { display: flex; flex-direction: column; align-items: center; gap: 22px; }
     .splash-mark {
-      width: 68px; aspect-ratio: 4308 / 4105;
+      width: 56px; aspect-ratio: 1;
       background: linear-gradient(120deg, var(--sp-a), var(--sp-b), var(--sp-c), var(--sp-a)); background-size: 220% 220%;
-      -webkit-mask: url('brand/simbolo.webp') center / contain no-repeat; mask: url('brand/simbolo.webp') center / contain no-repeat;
+      -webkit-mask: url('brand/mark.svg') center / contain no-repeat; mask: url('brand/mark.svg') center / contain no-repeat;
       animation: sp-breathe 1.6s ease-in-out infinite, sp-shift 2.4s linear infinite;
     }
     .splash-bar { width: 128px; height: 3px; border-radius: 3px; background: var(--sp-track); overflow: hidden; position: relative; }

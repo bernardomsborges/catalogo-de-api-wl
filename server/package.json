@@ -1,7 +1,7 @@
 {
   "name": "catalogo-apis-server",
   "version": "1.0.0",
-  "description": "Backend do catálogo de APIs do Automatiza",
+  "description": "Backend do catálogo de APIs whitelabel",
   "main": "src/index.js",
   "scripts": {
     "start": "node --env-file-if-exists=../.env src/index.js",

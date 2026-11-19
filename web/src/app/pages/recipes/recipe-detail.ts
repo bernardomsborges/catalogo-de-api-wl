@@ -1,4 +1,5 @@
 import { Component, computed, inject, input, OnInit, signal } from '@angular/core';
+import { BrandService } from '../../core/brand';
 import { Title } from '@angular/platform-browser';
 import { RouterLink } from '@angular/router';
 import { CatalogService } from '../../core/catalog.service';
@@ -152,6 +153,7 @@ export class RecipeDetail implements OnInit {
   private service = inject(RecipeService);
   private catalog = inject(CatalogService);
   private titleService = inject(Title);
+  private brand = inject(BrandService);
   slug = input.required<string>();
 
   recipe = signal<Recipe | null>(null);
@@ -165,7 +167,7 @@ export class RecipeDetail implements OnInit {
     try {
       const r = await this.service.get(this.slug());
       this.recipe.set(r);
-      this.titleService.setTitle(`${r.title} · ReceAPItos · Automatiza.MG`);
+      this.titleService.setTitle(this.brand.title(`${r.title} · ReceAPItos`));
     } catch {
       this.notFound.set(true);
     }

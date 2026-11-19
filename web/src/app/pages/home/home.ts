@@ -1,4 +1,5 @@
 import { Component, computed, ElementRef, HostListener, inject, OnInit, viewChild } from '@angular/core';
+import { BrandService } from '../../core/brand';
 import { AskService } from '../../core/ask.service';
 import { NgTemplateOutlet } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -26,7 +27,7 @@ const ROWS = 4;
       <div class="container hero-grid">
         <div class="hero-text">
           <span class="eyebrow">Portal do desenvolvedor</span>
-          <h1>Integre-se ao Automatiza.MG <span class="dim">com APIs bem documentadas</span></h1>
+          <h1>Integre seus sistemas <span class="dim">com APIs bem documentadas</span></h1>
           <p class="lead">Encontre a API certa, entenda como ela funciona e faça sua primeira chamada em minutos — com guias, exemplos de código em 7 linguagens e console de testes.</p>
           <div class="stats">
             <div><strong>{{ catalog.apis().length }}</strong><span>APIs</span></div>
@@ -40,7 +41,7 @@ const ROWS = 4;
             <span class="tile" [class.lit]="t" [style.--i]="$index"><ng-container *ngTemplateOutlet="icon; context: { $implicit: t }" /></span>
           }
           <span class="tile tile-brand">
-            <span class="tile-label">AUTOMATIZA.MG</span>
+            <span class="tile-label">{{ brand.brand.org || brand.brand.name }}</span>
             <span class="brand-mark brand-symbol tile-symbol"></span>
           </span>
           @for (t of tiles.slice(2); track $index) {
@@ -181,6 +182,7 @@ const ROWS = 4;
       position: absolute; top: 8px; left: 8px; padding: 3px 7px; border-radius: 3px;
       font-family: var(--mono); font-size: 0.68rem; font-weight: 600; letter-spacing: 0.05em;
       background: rgba(0, 0, 0, 0.72); color: #fff;
+      text-transform: uppercase; max-width: calc(100% - 16px); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
     }
     .tile-symbol { width: 40%; }
     .tick {
@@ -276,6 +278,7 @@ const ROWS = 4;
 })
 export class Home implements OnInit {
   private askService = inject(AskService);
+  brand = inject(BrandService);
 
   /** Opens the assistant with what was typed in the search box. */
   askAi() {

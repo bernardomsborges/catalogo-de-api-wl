@@ -6,15 +6,18 @@
  * Only what anyone may see goes in: an API's name and summary (also shown for private APIs to
  * people without access), and ReceAPItos open to everyone.
  */
-const SITE = 'Catálogo de APIs · Automatiza.MG';
-const SITE_DESCRIPTION = 'Encontre, entenda e integre as APIs do Automatiza.MG.';
+const branding = require('./branding');
+
 const IMAGE = '/icon-512.png';
 
-const PAGES = {
-  '/apis': { title: `APIs · ${SITE}`, description: 'Todas as APIs do Automatiza.MG, com documentação, exemplos e console de testes.' },
-  '/receapitos': { title: `ReceAPItos · ${SITE}`, description: 'Passo a passo de tarefas reais que usam as APIs do Automatiza.MG.' },
-  '/status': { title: `Status das APIs · ${SITE}`, description: 'Disponibilidade das APIs do Automatiza.MG nos últimos dias.' },
-};
+/** Fixed pages of the portal, with the portal's name (see branding.js). */
+function pages() {
+  return {
+    '/apis': { title: branding.title('APIs'), description: 'Todas as APIs do catálogo, com documentação, exemplos e console de testes.' },
+    '/receapitos': { title: branding.title('ReceAPItos'), description: 'Passo a passo de tarefas reais feitas com as APIs do catálogo.' },
+    '/status': { title: branding.title('Status das APIs'), description: 'Disponibilidade das APIs do catálogo nos últimos dias.' },
+  };
+}
 
 const clip = (s, max = 200) => {
   const t = String(s || '').replace(/\s+/g, ' ').trim();
@@ -35,19 +38,20 @@ function decode(segment) {
  */
 function previewFor(pathname, { findApi, findRecipe }) {
   const parts = pathname.split('/').filter(Boolean).map(decode);
-  const fallback = { title: SITE, description: SITE_DESCRIPTION, type: 'website' };
+  const { name, description } = branding.brand();
+  const fallback = { title: name, description, type: 'website' };
 
   if (parts[0] === 'apis' && parts[1]) {
     const api = findApi(parts[1]);
     if (!api) return fallback;
-    return { title: `${api.name} · ${SITE}`, description: clip(api.summary) || `Documentação da API ${api.name}.`, type: 'article' };
+    return { title: branding.title(api.name), description: clip(api.summary) || `Documentação da API ${api.name}.`, type: 'article' };
   }
   if ((parts[0] === 'receapitos' || parts[0] === 'receitas') && parts[1]) {
     const recipe = findRecipe(parts[1]);
     if (!recipe) return fallback;
-    return { title: `${recipe.title} · ReceAPItos · ${SITE}`, description: clip(recipe.goal) || 'Passo a passo com as APIs do Automatiza.MG.', type: 'article' };
+    return { title: branding.title(`${recipe.title} · ReceAPItos`), description: clip(recipe.goal) || 'Passo a passo com as APIs do catálogo.', type: 'article' };
   }
-  const page = PAGES[`/${parts.join('/')}`];
+  const page = pages()[`/${parts.join('/')}`];
   return page ? { ...page, type: 'website' } : fallback;
 }
 
@@ -58,7 +62,9 @@ function renderIndex(html, { title, description, type }, { url, origin }) {
   const t = escapeHtml(title);
   const d = escapeHtml(description);
   const tags = [
-    `<meta property="og:site_name" content="${escapeHtml(SITE)}">`,
+    // Whitelabel: the portal reads its name, organization and logo from here (see branding.js).
+    `<meta name="portal-brand" content="${escapeHtml(JSON.stringify(branding.brand()))}">`,
+    `<meta property="og:site_name" content="${escapeHtml(branding.brand().name)}">`,
     `<meta property="og:type" content="${type}">`,
     `<meta property="og:title" content="${t}">`,
     `<meta property="og:description" content="${d}">`,

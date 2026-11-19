@@ -264,7 +264,7 @@ function adminEmails() {
 async function ensureAdmin() {
   if (db.users.some((u) => u.role === 'admin' && !u.disabled)) return null;
   const email = normEmail(process.env.ADMIN_EMAIL || process.env.ADMIN_USER || 'admin');
-  const password = process.env.ADMIN_PASSWORD || 'automatiza123';
+  const password = process.env.ADMIN_PASSWORD || 'troque-esta-senha';
   const passwordHash = await hashPassword(password);
   const existing = findByEmail(email);
   if (existing) {

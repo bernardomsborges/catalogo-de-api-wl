@@ -150,16 +150,16 @@ type Turn = { role: 'user'; text: string } | { role: 'assistant'; answer: AskAns
       display: grid; place-items: center; width: 60px; height: 60px;
       border: 0; border-radius: 50%; cursor: pointer;
       background: linear-gradient(135deg, var(--grad-stops)); color: var(--on-grad); font: inherit; font-size: 1.75rem;
-      box-shadow: 0 8px 26px rgba(0, 12, 30, 0.3); transition: transform 0.18s ease, box-shadow 0.18s ease;
+      box-shadow: 0 8px 26px rgba(9, 9, 11, 0.3); transition: transform 0.18s ease, box-shadow 0.18s ease;
     }
-    .launcher:hover, .launcher:focus-visible { transform: translateY(-3px); box-shadow: 0 12px 30px rgba(0, 12, 30, 0.36); }
+    .launcher:hover, .launcher:focus-visible { transform: translateY(-3px); box-shadow: 0 12px 30px rgba(9, 9, 11, 0.36); }
     .launcher-tip { position: absolute; right: 72px; padding: 7px 11px; border-radius: 8px; background: var(--surface); color: var(--text); border: 1px solid var(--border); box-shadow: var(--shadow-lg); font-size: 0.8rem; font-weight: 600; white-space: nowrap; opacity: 0; transform: translateX(4px); pointer-events: none; transition: opacity 0.15s, transform 0.15s; }
     .launcher:hover .launcher-tip, .launcher:focus-visible .launcher-tip { opacity: 1; transform: none; }
-    .backdrop { position: fixed; inset: 0; z-index: 89; background: rgba(0, 12, 30, 0.06); backdrop-filter: blur(1.5px); pointer-events: none; }
-    .panel { position: fixed; right: 24px; bottom: 98px; width: min(560px, calc(100vw - 32px)); height: min(580px, calc(100dvh - 150px)); background: var(--surface); color: var(--text); z-index: 91; display: flex; flex-direction: column; overflow: hidden; border: 1px solid var(--border); border-radius: 18px; box-shadow: 0 18px 55px rgba(0, 12, 30, 0.28); animation: chat-in 0.18s ease-out; }
+    .backdrop { position: fixed; inset: 0; z-index: 89; background: rgba(9, 9, 11, 0.06); backdrop-filter: blur(1.5px); pointer-events: none; }
+    .panel { position: fixed; right: 24px; bottom: 98px; width: min(560px, calc(100vw - 32px)); height: min(580px, calc(100dvh - 150px)); background: var(--surface); color: var(--text); z-index: 91; display: flex; flex-direction: column; overflow: hidden; border: 1px solid var(--border); border-radius: 18px; box-shadow: 0 18px 55px rgba(9, 9, 11, 0.28); animation: chat-in 0.18s ease-out; }
     @keyframes chat-in { from { opacity: 0; transform: translateY(8px) scale(0.98); } to { opacity: 1; transform: none; } }
     .head { display: flex; align-items: center; gap: 11px; padding: 13px 14px; background: linear-gradient(120deg, var(--grad-stops)); color: var(--on-grad); flex: none; }
-    .avatar { display: grid; place-items: center; width: 40px; height: 40px; flex: none; border-radius: 50%; background: var(--surface); color: var(--brand); box-shadow: 0 2px 8px rgba(0, 12, 30, 0.18); }
+    .avatar { display: grid; place-items: center; width: 40px; height: 40px; flex: none; border-radius: 50%; background: var(--surface); color: var(--brand); box-shadow: 0 2px 8px rgba(9, 9, 11, 0.18); }
     .identity { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
     .head h2 { margin: 0; font-size: 0.98rem; line-height: 1.2; }
     .online { display: flex; align-items: center; gap: 5px; font-size: 0.72rem; opacity: 0.82; }

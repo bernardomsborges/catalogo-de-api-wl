@@ -26,7 +26,7 @@ import { errorMessage } from '../../core/catalog.service';
           <p class="small muted">Receba um e-mail quando sair uma versão nova, quando algo puder quebrar sua integração ou quando a API for depreciada.</p>
           <form (ngSubmit)="submit()">
             <label class="sr-only" for="follow-email">E-mail</label>
-            <input #emailInput id="follow-email" name="email" type="email" required autocomplete="email" [(ngModel)]="email" placeholder="seu.email@orgao.mg.gov.br" />
+            <input #emailInput id="follow-email" name="email" type="email" required autocomplete="email" [(ngModel)]="email" placeholder="seu.email@organizacao.gov.br" />
             @if (error()) { <div class="alert alert-error small" role="alert">{{ error() }}</div> }
             <div class="row">
               <button class="btn btn-primary btn-sm" type="submit" [disabled]="sending() || !email.trim()">{{ sending() ? 'Enviando…' : 'Acompanhar' }}</button>

@@ -10,7 +10,7 @@ const nodemailer = require('nodemailer');
 const DATA_FILE = process.env.DATA_FILE || path.join(__dirname, '..', 'data', 'apis.json');
 const OUTBOX_DIR = process.env.OUTBOX_DIR || path.join(path.dirname(DATA_FILE), 'outbox');
 const SMTP_URL = process.env.SMTP_URL || '';
-const MAIL_FROM = process.env.MAIL_FROM || 'Catálogo de APIs <nao-responda@localhost>';
+const MAIL_FROM = process.env.MAIL_FROM || `${require('./branding').brand().name} <nao-responda@localhost>`;
 
 const transport = SMTP_URL
   ? nodemailer.createTransport(SMTP_URL)

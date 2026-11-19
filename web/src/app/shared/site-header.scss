@@ -1,14 +1,14 @@
 /* The bar is dark in both themes, like Backstage. */
 :host {
-  /* Azul escuro da paleta. */
-  --hd-bg: #00183b;
-  --hd-panel: #03224d;
+  /* Neutral graphite (whitelabel). */
+  --hd-bg: #18181b;
+  --hd-panel: #232326;
   --hd-line: rgba(255, 255, 255, 0.1);
   --hd-text: #ffffff;
-  --hd-muted: #a9b8cf;
+  --hd-muted: #a1a1aa;
   --hd-hover: rgba(255, 255, 255, 0.08);
-  --hd-pill: #0d2f5e;
-  --hd-pill-hover: #18406f;
+  --hd-pill: #2a2a2e;
+  --hd-pill-hover: #36363b;
   display: block;
   /* Fixed and transparent: the page's own top section shows around the bar,
      so there is no separate strip of color above it. Pages reserve
@@ -20,9 +20,9 @@
   z-index: 40;
   pointer-events: none;
 }
-:host-context([data-theme='dark']) { --hd-bg: #04204a; --hd-panel: #072757; --hd-pill: #0f3268; --hd-pill-hover: #1a4280; }
+:host-context([data-theme='dark']) { --hd-bg: #141416; --hd-panel: #1d1d20; --hd-pill: #26262a; --hd-pill-hover: #313136; }
 @media (prefers-color-scheme: dark) {
-  :host-context(html:not([data-theme='light'])) { --hd-bg: #04204a; --hd-panel: #072757; --hd-pill: #0f3268; --hd-pill-hover: #1a4280; }
+  :host-context(html:not([data-theme='light'])) { --hd-bg: #141416; --hd-panel: #1d1d20; --hd-pill: #26262a; --hd-pill-hover: #313136; }
 }
 
 .bar-wrap { padding: 12px 16px 0; max-width: 1440px; margin: 0 auto; position: relative; }
@@ -40,7 +40,7 @@
 
 .brand { display: flex; align-items: center; gap: 14px; color: var(--hd-text); text-decoration: none !important; flex-shrink: 0; }
 /* White logo on the always-dark bar: used as-is, no filter needed. */
-.brand-logo { height: 30px; width: auto; display: block; }
+.brand app-brand-logo { font-size: 1rem; }
 .brand-divider { width: 1px; height: 22px; background: rgba(255, 255, 255, 0.22); }
 .brand-sub { font-size: 0.95rem; font-weight: 500; color: #d4d4d8; letter-spacing: -0.01em; white-space: nowrap; }
 
@@ -97,7 +97,7 @@
 }
 .panel-link:hover { background: var(--hd-hover); }
 .count { font-size: 0.75rem; color: var(--hd-muted); font-weight: 500; }
-.check { color: #b9a3e6; }
+.check { color: #d4d4d8; }
 .panel-empty { padding: 10px 12px; color: var(--hd-muted); font-size: 0.88rem; }
 .small-panel { min-width: 170px; }
 
@@ -151,7 +151,6 @@
   .bar-wrap { padding: 8px 8px 0; }
   .bar { padding: 0 8px 0 14px; gap: 8px; height: 58px; border-radius: 18px; }
   .brand-sub, .brand-divider { display: none; }
-  .brand-logo { height: 26px; }
   .pill-label { display: none; }
   .pill-dark { padding: 0 12px; }
   .drawer { left: 8px; right: 8px; width: auto; }

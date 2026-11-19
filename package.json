@@ -1,7 +1,7 @@
 {
   "name": "catalogo-de-apis",
   "private": true,
-  "description": "Catálogo de APIs do Automatiza",
+  "description": "Catálogo de APIs whitelabel",
   "scripts": {
     "install:all": "npm --prefix server install && npm --prefix web install",
     "dev:server": "npm --prefix server run dev",

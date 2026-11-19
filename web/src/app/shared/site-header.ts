@@ -1,4 +1,6 @@
 import { Component, computed, ElementRef, HostListener, inject, OnInit, signal } from '@angular/core';
+import { BrandLogo } from './brand-logo';
+import { BrandService } from '../core/brand';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { NavigationEnd, Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { AskService } from '../core/ask.service';
@@ -12,13 +14,14 @@ type Menu = 'apis' | 'novidades' | 'tema' | 'conta' | 'mobile';
 /** Floating dark top bar with dropdown menus, in the style of Spotify's Backstage site. */
 @Component({
   selector: 'app-site-header',
-  imports: [RouterLink, RouterLinkActive],
+  imports: [BrandLogo, RouterLink, RouterLinkActive],
   templateUrl: './site-header.html',
   styleUrl: './site-header.scss',
 })
 export class SiteHeader implements OnInit {
   askService = inject(AskService);
   private host = inject(ElementRef<HTMLElement>);
+  brand = inject(BrandService);
   private router = inject(Router);
   catalog = inject(CatalogService);
   theme = inject(ThemeService);

@@ -1,4 +1,6 @@
 import { Component, computed, inject, input, OnInit, signal } from '@angular/core';
+import { BrandLogo } from '../../shared/brand-logo';
+import { BrandService } from '../../core/brand';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../core/auth';
@@ -7,13 +9,13 @@ import { CatalogService, errorMessage } from '../../core/catalog.service';
 /** /entrar and /cadastro: log in or create an account. `voltar`: where to go afterwards. */
 @Component({
   selector: 'app-login',
-  imports: [FormsModule, RouterLink],
+  imports: [BrandLogo, FormsModule, RouterLink],
   template: `
     <div class="wrap">
      <div class="card shell">
       <aside class="side">
         <div class="side-top">
-          <span class="chip">AUTOMATIZA.MG</span>
+          <span class="chip">{{ brand.brand.name }}</span>
           <span class="brand-mark brand-symbol side-symbol" aria-hidden="true"></span>
         </div>
         <div class="side-text">
@@ -57,7 +59,7 @@ import { CatalogService, errorMessage } from '../../core/catalog.service';
       </aside>
 
       <form class="box" (ngSubmit)="submit()">
-        <span class="brand-mark brand-full login-logo" role="img" aria-label="Automatiza.MG"></span>
+        <app-brand-logo class="login-logo" [size]="28" />
         <h1>{{ signup() ? 'Criar conta' : 'Entrar' }}</h1>
         <p class="muted">
           @if (signup()) {
@@ -155,7 +157,7 @@ import { CatalogService, errorMessage } from '../../core/catalog.service';
       animation: brand-shift 12s ease-in-out infinite;
     }
     .side-top { display: flex; justify-content: space-between; align-items: flex-start; }
-    .chip { padding: 3px 7px; border-radius: 3px; font-family: var(--mono); font-size: 0.68rem; font-weight: 600; letter-spacing: 0.05em; background: rgba(0, 0, 0, 0.55); color: #fff; }
+    .chip { padding: 3px 7px; border-radius: 3px; font-family: var(--mono); font-size: 0.68rem; font-weight: 600; letter-spacing: 0.05em; background: rgba(0, 0, 0, 0.55); color: #fff; text-transform: uppercase; max-width: 70%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .side-symbol { width: 56px; color: #fff; animation: float 6s ease-in-out infinite; }
     .eyebrow { font-family: var(--mono); font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; opacity: 0.85; }
     .side h2 { margin: 10px 0 18px; font-size: 1.6rem; line-height: 1.15; letter-spacing: -0.02em; color: inherit; }
@@ -208,6 +210,7 @@ import { CatalogService, errorMessage } from '../../core/catalog.service';
 })
 export class Login implements OnInit {
   auth = inject(AuthService);
+  brand = inject(BrandService);
   /** SSO and/or e-mail and password, as the server offers. */
   opts = this.auth.options;
   /** Message from a failed SSO login (the server redirects here with it). */

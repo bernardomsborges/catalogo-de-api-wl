@@ -1,10 +1,12 @@
 <div class="bar-wrap" [class.compact]="scrolled()">
   <header class="bar">
     <div class="full">
-    <a routerLink="/" class="brand" aria-label="Automatiza.MG — Catálogo de APIs, início">
-      <img src="brand/logo.webp" alt="" class="brand-logo" width="149" height="30" />
-      <span class="brand-divider" aria-hidden="true"></span>
-      <span class="brand-sub">Catálogo de APIs</span>
+    <a routerLink="/" class="brand" [attr.aria-label]="brand.brand.name + ', início'">
+      <app-brand-logo [size]="26" />
+      @if (brand.brand.logoUrl) {
+        <span class="brand-divider" aria-hidden="true"></span>
+        <span class="brand-sub">{{ brand.brand.name }}</span>
+      }
     </a>
 
     <nav class="nav" aria-label="Principal">

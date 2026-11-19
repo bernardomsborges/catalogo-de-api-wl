@@ -9,6 +9,7 @@
  * - Nothing is saved here: the admin accepts, edits or rejects each suggestion in the form.
  */
 const llm = require('./llm');
+const { promptName } = require('../branding');
 // Same gap rules as the quality score shown in the admin (PRO-164).
 const { findGaps, aiGaps, looksEnglish } = require('../../../shared/doc-quality.ts');
 
@@ -112,7 +113,7 @@ function endpointBrief(api, i) {
   };
 }
 
-const SYSTEM = `Você escreve a documentação de APIs do Catálogo de APIs do Automatiza.MG (governo de Minas Gerais), em português do Brasil, com tom claro, direto e cordial, para pessoas desenvolvedoras.
+const SYSTEM = `Você escreve a documentação de APIs do ${promptName()}, em português do Brasil, com tom claro, direto e cordial, para pessoas desenvolvedoras.
 
 Regras:
 - Preencha SOMENTE as lacunas pedidas (cada uma tem um "target"). Não crie outras.
@@ -222,7 +223,7 @@ async function improve(api, { endpoints, apiLevel = true } = {}) {
   return { suggestions, dropped, gaps: gaps.length };
 }
 
-const GUIDE_SYSTEM = `Você escreve guias para o Catálogo de APIs do Automatiza.MG, em português do Brasil, em Markdown.
+const GUIDE_SYSTEM = `Você escreve guias para o ${promptName()}, em português do Brasil, em Markdown.
 Um guia explica um fluxo comum, passo a passo, citando as rotas na ordem em que devem ser chamadas.
 Use SOMENTE as rotas listadas (cite como \`MÉTODO /caminho\`) e só os parâmetros e campos informados. Não invente nada.
 Não inclua chaves, senhas ou tokens reais; use marcadores como SUA_CHAVE.

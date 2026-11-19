@@ -5,6 +5,7 @@
 const mailer = require('./mailer');
 const subscriptions = require('./subscriptions');
 const accounts = require('./accounts');
+const branding = require('./branding');
 
 /** Subscribers who may still read the API (a private API only e-mails people with access). */
 const recipients = (api) => subscriptions.activeFor(api.id).filter((s) => accounts.canEmailSee(s.email, api));
@@ -66,7 +67,7 @@ function layout(title, bodyHtml, footerHtml) {
 }
 
 const button = (url, label) =>
-  `<p style="margin:18px 0"><a href="${esc(url)}" style="background:#0b2a4a;color:#fff;text-decoration:none;padding:10px 18px;border-radius:8px;display:inline-block">${esc(label)}</a></p>`;
+  `<p style="margin:18px 0"><a href="${esc(url)}" style="background:#18181b;color:#fff;text-decoration:none;padding:10px 18px;border-radius:8px;display:inline-block">${esc(label)}</a></p>`;
 
 async function sendConfirmation(sub, api) {
   const url = `${PUBLIC_URL}/acompanhar/confirmar?token=${encodeURIComponent(sub.token)}`;
@@ -280,7 +281,7 @@ async function sendAccessDecided(request, api) {
 ${request.note}` : ''}
 
 ${url}`,
-    html: layout(subject, body, 'Você recebe este e-mail porque pediu acesso no Catálogo de APIs.'),
+    html: layout(subject, body, `Você recebe este e-mail porque pediu acesso no ${branding.brand().name}.`),
   });
   return 1;
 }
@@ -290,7 +291,7 @@ async function sendPasswordReset(user, token, minutes) {
   const url = `${PUBLIC_URL}/redefinir-senha?token=${encodeURIComponent(token)}`;
   await mailer.send({
     to: user.email,
-    subject: 'Redefinir a sua senha do Catálogo de APIs',
+    subject: `Redefinir a sua senha do ${branding.brand().name}`,
     text: `Para criar uma senha nova, abra este link (vale por ${minutes} minutos e só funciona uma vez):
 ${url}
 

@@ -11,6 +11,7 @@
  * to the search-then-answer flow (assistant.js).
  */
 const llm = require('./llm');
+const { promptName } = require('../branding');
 const index = require('./catalog-index');
 const assistant = require('./assistant');
 
@@ -79,7 +80,7 @@ const TOOLS = [
   },
 ];
 
-const SYSTEM = `Você é o assistente do Catálogo de APIs do Automatiza.MG (governo de Minas Gerais).
+const SYSTEM = `Você é o assistente do ${promptName()}.
 Você tem ferramentas para consultar os dados do catálogo: APIs, rotas, ReceAPItos (o nome do catálogo para receitas) e status. Use-as sempre que precisar de algum dado — não responda de memória.
 
 Você ajuda a:

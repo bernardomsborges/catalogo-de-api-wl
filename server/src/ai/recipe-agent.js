@@ -9,6 +9,7 @@
  * - Nothing is saved here: the form shows the draft and the admin edits and saves it.
  */
 const llm = require('./llm');
+const { promptName } = require('../branding');
 const aiIndex = require('./catalog-index');
 
 /** Routes sent to the model per request (each one costs tokens). */
@@ -111,7 +112,7 @@ function brief(id, { api, ep }) {
   };
 }
 
-const SYSTEM = `Você ajuda a equipe do Catálogo de APIs do Automatiza.MG (governo de Minas Gerais) a montar um "ReceAPIto": uma tarefa real feita com várias rotas de API em ordem, passo a passo. Escreva em português do Brasil, com tom claro, direto e cordial, para pessoas desenvolvedoras.
+const SYSTEM = `Você ajuda a equipe do ${promptName()} a montar um "ReceAPIto": uma tarefa real feita com várias rotas de API em ordem, passo a passo. Escreva em português do Brasil, com tom claro, direto e cordial, para pessoas desenvolvedoras.
 
 Você recebe a ideia da pessoa, as rotas disponíveis (cada uma com um "id") e, às vezes, o ReceAPIto atual para ajustar.
 

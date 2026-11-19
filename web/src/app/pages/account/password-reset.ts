@@ -1,4 +1,5 @@
 import { Component, computed, inject, input, signal } from '@angular/core';
+import { BrandLogo } from '../../shared/brand-logo';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../core/auth';
@@ -10,12 +11,12 @@ import { errorMessage } from '../../core/catalog.service';
  */
 @Component({
   selector: 'app-password-reset',
-  imports: [FormsModule, RouterLink],
+  imports: [BrandLogo, FormsModule, RouterLink],
   template: `
     <div class="wrap">
       @if (!token()) {
         <form class="card box" (ngSubmit)="sendLink()">
-          <span class="brand-mark brand-full login-logo" role="img" aria-label="Automatiza.MG"></span>
+          <app-brand-logo class="login-logo" [size]="28" />
           <h1>Esqueci minha senha</h1>
           @if (sent()) {
             <div class="alert alert-ok" role="status">{{ sent() }}</div>
@@ -34,7 +35,7 @@ import { errorMessage } from '../../core/catalog.service';
         </form>
       } @else {
         <form class="card box" (ngSubmit)="reset()">
-          <span class="brand-mark brand-full login-logo" role="img" aria-label="Automatiza.MG"></span>
+          <app-brand-logo class="login-logo" [size]="28" />
           <h1>Criar uma senha nova</h1>
           <p class="muted">Depois de salvar, você entra direto e as outras sessões abertas são encerradas.</p>
           @if (error()) {

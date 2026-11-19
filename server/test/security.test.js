@@ -28,7 +28,7 @@ describe('rules', () => {
   });
 
   test('allowed origins: the portal, the dev server outside production and CORS_ORIGINS', () => {
-    assert.deepEqual([...allowedOrigins({ publicUrl: 'https://apis.mg.gov.br/', extra: '', production: true })], ['https://apis.mg.gov.br']);
+    assert.deepEqual([...allowedOrigins({ publicUrl: 'https://apis.exemplo.gov.br/', extra: '', production: true })], ['https://apis.exemplo.gov.br']);
     assert.deepEqual([...allowedOrigins({ publicUrl: 'http://localhost:3000', extra: 'https://a.gov.br/x, https://b.gov.br', production: false })], [
       'http://localhost:3000',
       'http://localhost:4200',

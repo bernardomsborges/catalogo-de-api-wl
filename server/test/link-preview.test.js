@@ -27,7 +27,7 @@ describe('rules', () => {
 
   test('unknown or hidden pages get the site preview, not an error', () => {
     for (const p of ['/apis/nao-existe', '/receapitos/privado', '/admin/editar/1', '/apis/%E0%A4%A']) {
-      assert.equal(previewFor(p, lookups).title, 'Catálogo de APIs · Automatiza.MG');
+      assert.equal(previewFor(p, lookups).title, 'Catálogo de APIs');
     }
   });
 
@@ -77,7 +77,7 @@ describe('HTTP', { skip: !fs.existsSync(INDEX) && 'rode o build do portal antes'
   const page = async (url) => (await server.call('GET', url)).text;
 
   test('the home page and an API page go out with their own tags', async () => {
-    assert.match(await page('/'), /<meta property="og:title" content="Catálogo de APIs · Automatiza.MG">/);
+    assert.match(await page('/'), /<meta property="og:title" content="Catálogo de APIs">/);
     const html = await page('/apis/aberta');
     assert.match(html, /<title>API aberta · /);
     assert.match(html, /<meta property="og:description" content="Resumo da aberta.">/);

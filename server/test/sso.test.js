@@ -6,7 +6,7 @@ const http = require('node:http');
 const { startServer, portOf } = require('./helpers');
 
 const CLIENT = { id: 'catalogo', secret: 'segredo-do-cliente' };
-const ADMIN = { email: 'chefe@orgao.mg.gov.br', password: 'senha-do-admin-123' };
+const ADMIN = { email: 'chefe@orgao.exemplo.gov.br', password: 'senha-do-admin-123' };
 
 /** A tiny OpenID provider: discovery, token endpoint (checks PKCE and the client secret) and userinfo. */
 function fakeProvider() {
@@ -102,7 +102,7 @@ describe('SSO with password login still on', () => {
         OIDC_CLIENT_ID: CLIENT.id,
         OIDC_CLIENT_SECRET: CLIENT.secret,
         OIDC_LABEL: 'Entrar com a conta do Estado',
-        OIDC_ALLOWED_DOMAINS: 'orgao.mg.gov.br, outro.mg.gov.br',
+        OIDC_ALLOWED_DOMAINS: 'orgao.exemplo.gov.br, outro.exemplo.gov.br',
       },
     });
   });
@@ -130,12 +130,12 @@ describe('SSO with password login still on', () => {
   });
 
   test('a new person gets a consumer account and goes back where they were', async () => {
-    const r = await ssoLogin(server, provider, { sub: 'pessoa-1', email: 'Maria@Orgao.MG.gov.br', name: 'Maria Silva' }, { voltar: '/apis' });
+    const r = await ssoLogin(server, provider, { sub: 'pessoa-1', email: 'Maria@Orgao.Exemplo.gov.br', name: 'Maria Silva' }, { voltar: '/apis' });
     assert.equal(r.error, null, r.location);
     assert.match(r.location, /^\/entrar\/sso#/);
     assert.equal(r.voltar, '/apis');
     const me = await server.call('GET', '/api/auth/me', { token: r.token });
-    assert.equal(me.json.user.email, 'maria@orgao.mg.gov.br');
+    assert.equal(me.json.user.email, 'maria@orgao.exemplo.gov.br');
     assert.equal(me.json.user.name, 'Maria Silva');
     assert.equal(me.json.user.role, 'consumer');
     assert.equal(me.json.user.hasPassword, false);
@@ -145,10 +145,10 @@ describe('SSO with password login still on', () => {
   });
 
   test('the next login finds the same account by the SSO identity, even with a new e-mail', async () => {
-    const r = await ssoLogin(server, provider, { sub: 'pessoa-1', email: 'maria.silva@orgao.mg.gov.br', name: 'Maria Silva' });
+    const r = await ssoLogin(server, provider, { sub: 'pessoa-1', email: 'maria.silva@orgao.exemplo.gov.br', name: 'Maria Silva' });
     const me = await server.call('GET', '/api/auth/me', { token: r.token });
-    assert.equal(me.json.user.email, 'maria.silva@orgao.mg.gov.br');
-    const first = await ssoLogin(server, provider, { sub: 'pessoa-1', email: 'maria.silva@orgao.mg.gov.br' });
+    assert.equal(me.json.user.email, 'maria.silva@orgao.exemplo.gov.br');
+    const first = await ssoLogin(server, provider, { sub: 'pessoa-1', email: 'maria.silva@orgao.exemplo.gov.br' });
     assert.equal((await server.call('GET', '/api/auth/me', { token: first.token })).json.user.id, me.json.user.id);
   });
 
@@ -161,45 +161,45 @@ describe('SSO with password login still on', () => {
   });
 
   test('the e-mail may come only from userinfo', async () => {
-    const r = await ssoLogin(server, provider, { sub: 'pessoa-2', email: 'joao@outro.mg.gov.br', emailOnlyInUserinfo: true });
+    const r = await ssoLogin(server, provider, { sub: 'pessoa-2', email: 'joao@outro.exemplo.gov.br', emailOnlyInUserinfo: true });
     assert.equal(r.error, null);
-    assert.equal((await server.call('GET', '/api/auth/me', { token: r.token })).json.user.email, 'joao@outro.mg.gov.br');
+    assert.equal((await server.call('GET', '/api/auth/me', { token: r.token })).json.user.email, 'joao@outro.exemplo.gov.br');
   });
 
   test('e-mails from other domains are refused', async () => {
     const r = await ssoLogin(server, provider, { sub: 'x', email: 'alguem@gmail.com' });
     assert.equal(r.token, null);
-    assert.match(r.error, /Só entram e-mails de @orgao\.mg\.gov\.br, @outro\.mg\.gov\.br/);
+    assert.match(r.error, /Só entram e-mails de @orgao\.exemplo\.gov\.br, @outro\.exemplo\.gov\.br/);
   });
 
   test('an unconfirmed e-mail is refused', async () => {
-    const r = await ssoLogin(server, provider, { sub: 'y', email: 'novo@orgao.mg.gov.br', email_verified: false });
+    const r = await ssoLogin(server, provider, { sub: 'y', email: 'novo@orgao.exemplo.gov.br', email_verified: false });
     assert.match(r.error, /não foi confirmado/);
   });
 
   test('a different state or a missing cookie is refused (login started elsewhere)', async () => {
-    assert.match((await ssoLogin(server, provider, { sub: 'z', email: 'z@orgao.mg.gov.br' }, { tamper: 'state' })).error, /expirou ou foi aberto em outro navegador/);
-    assert.match((await ssoLogin(server, provider, { sub: 'z', email: 'z@orgao.mg.gov.br' }, { tamper: 'cookie' })).error, /expirou ou foi aberto em outro navegador/);
+    assert.match((await ssoLogin(server, provider, { sub: 'z', email: 'z@orgao.exemplo.gov.br' }, { tamper: 'state' })).error, /expirou ou foi aberto em outro navegador/);
+    assert.match((await ssoLogin(server, provider, { sub: 'z', email: 'z@orgao.exemplo.gov.br' }, { tamper: 'cookie' })).error, /expirou ou foi aberto em outro navegador/);
   });
 
   test('a token issued with another nonce or for another client is refused', async () => {
-    assert.match((await ssoLogin(server, provider, { sub: 'w', email: 'w@orgao.mg.gov.br', nonce: 'outro' })).error, /Não foi possível concluir/);
-    assert.match((await ssoLogin(server, provider, { sub: 'w', email: 'w@orgao.mg.gov.br', aud: 'outro-cliente' })).error, /Não foi possível concluir/);
-    assert.match((await ssoLogin(server, provider, { sub: 'w', email: 'w@orgao.mg.gov.br', exp: 1 })).error, /Não foi possível concluir/);
+    assert.match((await ssoLogin(server, provider, { sub: 'w', email: 'w@orgao.exemplo.gov.br', nonce: 'outro' })).error, /Não foi possível concluir/);
+    assert.match((await ssoLogin(server, provider, { sub: 'w', email: 'w@orgao.exemplo.gov.br', aud: 'outro-cliente' })).error, /Não foi possível concluir/);
+    assert.match((await ssoLogin(server, provider, { sub: 'w', email: 'w@orgao.exemplo.gov.br', exp: 1 })).error, /Não foi possível concluir/);
   });
 
   test('a disabled account does not get in through SSO', async () => {
     const admin = (await ssoLogin(server, provider, { sub: 'chefe', email: ADMIN.email })).token;
     const users = (await server.call('GET', '/api/admin/users', { token: admin })).json;
-    const joao = users.find((u) => u.email === 'joao@outro.mg.gov.br');
+    const joao = users.find((u) => u.email === 'joao@outro.exemplo.gov.br');
     assert.equal(joao.sso, true);
     assert.equal((await server.call('PUT', `/api/admin/users/${joao.id}`, { token: admin, body: { disabled: true } })).status, 200);
-    const r = await ssoLogin(server, provider, { sub: 'pessoa-2', email: 'joao@outro.mg.gov.br' });
+    const r = await ssoLogin(server, provider, { sub: 'pessoa-2', email: 'joao@outro.exemplo.gov.br' });
     assert.match(r.error, /desativada/);
   });
 
   test('"voltar" only goes to pages of the portal', async () => {
-    const r = await ssoLogin(server, provider, { sub: 'pessoa-1', email: 'maria.silva@orgao.mg.gov.br' }, { voltar: '//site-malicioso.com' });
+    const r = await ssoLogin(server, provider, { sub: 'pessoa-1', email: 'maria.silva@orgao.exemplo.gov.br' }, { voltar: '//site-malicioso.com' });
     assert.equal(r.voltar, null);
   });
 
@@ -232,10 +232,10 @@ describe('SSO only (PASSWORD_LOGIN=false)', () => {
 
   test('the admin enters through SSO and can add people without a password', async () => {
     const admin = (await ssoLogin(server, provider, { sub: 'chefe', email: ADMIN.email })).token;
-    const r = await server.call('POST', '/api/admin/users', { token: admin, body: { email: 'editor@orgao.mg.gov.br', name: 'Editor', role: 'editor' } });
+    const r = await server.call('POST', '/api/admin/users', { token: admin, body: { email: 'editor@orgao.exemplo.gov.br', name: 'Editor', role: 'editor' } });
     assert.equal(r.status, 201, r.text);
     // The editor then enters through SSO and already has the role.
-    const editor = (await ssoLogin(server, provider, { sub: 'editor-1', email: 'editor@orgao.mg.gov.br' })).token;
+    const editor = (await ssoLogin(server, provider, { sub: 'editor-1', email: 'editor@orgao.exemplo.gov.br' })).token;
     assert.equal((await server.call('GET', '/api/auth/me', { token: editor })).json.user.role, 'editor');
   });
 });

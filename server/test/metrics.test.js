@@ -11,7 +11,7 @@ describe('search terms', () => {
   test('normalized, and never a secret or an e-mail', () => {
     assert.equal(searchTerm('  Emitir   CERTIDÃO '), 'emitir certidão');
     assert.equal(searchTerm('a'), '');
-    assert.equal(searchTerm('joao@orgao.mg.gov.br'), '');
+    assert.equal(searchTerm('joao@orgao.exemplo.gov.br'), '');
     assert.equal(searchTerm('Bearer abcdefghijklmnop'), '');
     assert.equal(searchTerm('x'.repeat(300)).length, 80);
   });

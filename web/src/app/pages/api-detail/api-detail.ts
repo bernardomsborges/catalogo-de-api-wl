@@ -1,4 +1,5 @@
 import { afterNextRender, Component, computed, DestroyRef, effect, ElementRef, inject, Injector, input, signal, untracked, viewChild } from '@angular/core';
+import { BrandService } from '../../core/brand';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { Title } from '@angular/platform-browser';
@@ -36,6 +37,7 @@ export class ApiDetail {
   private catalog = inject(CatalogService);
   private toast = inject(ToastService);
   private titleService = inject(Title);
+  private brand = inject(BrandService);
   private injector = inject(Injector);
   private fragment = toSignal(inject(ActivatedRoute).fragment);
 
@@ -160,7 +162,7 @@ export class ApiDetail {
           this.status.refresh();
           // The assistant button opens focused on the API being read.
           this.askService.pageApi.set(a.locked ? null : { slug: a.slug, name: a.name });
-          this.titleService.setTitle(`${a.name} · Catálogo de APIs`);
+          this.titleService.setTitle(this.brand.title(a.name));
           this.recipeService.list({ api: a.id }).then((r) => this.recipes.set(r), () => this.recipes.set([]));
         })
         .catch(() => this.notFound.set(true));

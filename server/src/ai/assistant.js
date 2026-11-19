@@ -9,6 +9,7 @@
  */
 const crypto = require('crypto');
 const path = require('path');
+const { promptName } = require('../branding');
 const llm = require('./llm');
 const index = require('./catalog-index');
 const { docStore } = require('../db/doc-store');
@@ -104,7 +105,7 @@ function resolveGap(key, resolved, by) {
   return true;
 }
 
-const SYSTEM = `Você é o assistente do Catálogo de APIs do Automatiza.MG. Ajuda quem vai integrar a descobrir QUAL API e QUAIS ROTAS usar para uma tarefa.
+const SYSTEM = `Você é o assistente do ${promptName()}. Ajuda quem vai integrar a descobrir QUAL API e QUAIS ROTAS usar para uma tarefa.
 
 Regras:
 - Use SOMENTE as rotas e ReceAPItos (receitas) listados em "Catálogo" (referências R1, R2…). Nunca invente rotas, parâmetros, campos ou APIs.

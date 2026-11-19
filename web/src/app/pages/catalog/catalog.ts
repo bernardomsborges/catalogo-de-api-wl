@@ -1,4 +1,5 @@
 import { Component, computed, effect, inject, input, OnInit, signal, WritableSignal } from '@angular/core';
+import { BrandService } from '../../core/brand';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { CatalogService } from '../../core/catalog.service';
@@ -15,7 +16,7 @@ import { ApiCard } from '../../shared/api-card';
     <div class="container page">
       <header class="head">
         <h1>APIs</h1>
-        <p class="muted">Todas as APIs disponíveis para integração com o Automatiza.</p>
+        <p class="muted">Todas as APIs disponíveis para integração@if (brand.brand.org) { com {{ brand.brand.org }} }.</p>
       </header>
 
       <div class="layout">
@@ -154,6 +155,7 @@ import { ApiCard } from '../../shared/api-card';
 })
 export class Catalog implements OnInit {
   catalog = inject(CatalogService);
+  brand = inject(BrandService);
   private router = inject(Router);
   private metrics = inject(MetricsService);
   private lastSearch = '';

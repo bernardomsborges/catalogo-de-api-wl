@@ -2,43 +2,41 @@
    Tema: segue o sistema por padrão; o botão do cabeçalho grava
    data-theme="light" | "dark" no <html> para forçar um dos dois.
 
-   Paleta do Escritório: Azul escuro #00183b (primária), Azure #59a1ba (secundária),
-   Roxo apagado #6a4d9f (Automatiza.MG), Branco e Preto. O degradê da marca vai
-   do azul escuro ao roxo passando pelo azure. */
+   Whitelabel: paleta neutra (escala de cinza), sem cor de marca. Para dar a
+   identidade de uma organização, troque --brand, --accent, --link e --grad-stops
+   (e as variantes do tema escuro em dark-tokens). As cores de status e dos
+   métodos HTTP são funcionais e não dependem da marca. */
 :root {
-  --palette-navy: #00183b;
-  --palette-azure: #59a1ba;
-  --palette-purple: #6a4d9f;
-  --brand: #00183b;
-  --brand-strong: #0d2f63;
-  --brand-soft: #e5eef6;
+  --brand: #18181b;
+  --brand-strong: #000000;
+  --brand-soft: #f0f0f2;
   --on-brand: #ffffff;
-  --accent: #6a4d9f;
-  --link: #6a4d9f;
-  /* Brand gradient stops; use as linear-gradient(<angle>, var(--grad-stops)). */
-  --grad-stops: #00183b, #59a1ba, #6a4d9f;
+  --accent: #52525b;
+  --link: #27272a;
+  /* Gradient stops; use as linear-gradient(<angle>, var(--grad-stops)). */
+  --grad-stops: #27272a, #52525b, #71717a;
   --on-grad: #ffffff;
-  --bg: #f5f8fb;
+  --bg: #fafafa;
   --surface: #ffffff;
-  --surface-2: #eef3f8;
-  --surface-hover: #f1f5f9;
-  --text: #0b1730;
-  --text-2: #41506b;
-  --text-3: #5d6c86; /* AA (4.5:1) on every light background */
-  --border: #dfe6ee;
-  --border-strong: #c9d4e1;
+  --surface-2: #f4f4f5;
+  --surface-hover: #f4f4f5;
+  --text: #18181b;
+  --text-2: #3f3f46;
+  --text-3: #52525b; /* AA (4.5:1) on every light background */
+  --border: #e4e4e7;
+  --border-strong: #d4d4d8;
   --danger: #b42630;
   --danger-soft: #fdecee;
   --warn: #8f5500;
   --warn-soft: #fff4dc;
   --ok: #0b7a55;
   --ok-soft: #e3f6ee;
-  --code-bg: #00122d;
-  --code-head: #031c42;
-  --code-border: #0b2853;
-  --code-text: #dfe8f3;
-  --overlay: rgba(0, 12, 30, 0.55);
-  --hero-glow: rgba(89, 161, 186, 0.18);
+  --code-bg: #18181b;
+  --code-head: #232326;
+  --code-border: #2e2e33;
+  --code-text: #e4e4e7;
+  --overlay: rgba(9, 9, 11, 0.55);
+  --hero-glow: rgba(113, 113, 122, 0.12);
   --m-get-bg: #e0f2fe;    --m-get: #0369a1;
   --m-post-bg: #dcfce7;   --m-post: #15803d;
   --m-put-bg: #fef3c7;    --m-put: #a16207;
@@ -46,47 +44,46 @@
   --m-delete-bg: #fee2e2; --m-delete: #b91c1c;
   --radius: 10px;
   --radius-lg: 16px;
-  --shadow: 0 1px 2px rgba(0, 24, 59, 0.06), 0 1px 3px rgba(0, 24, 59, 0.08);
-  --shadow-lg: 0 12px 32px rgba(0, 24, 59, 0.12);
+  --shadow: 0 1px 2px rgba(9, 9, 11, 0.05), 0 1px 3px rgba(9, 9, 11, 0.07);
+  --shadow-lg: 0 12px 32px rgba(9, 9, 11, 0.1);
   --font: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   --mono: 'JetBrains Mono', ui-monospace, 'Cascadia Code', Consolas, monospace;
   /* Space the fixed header takes at the top of every page. */
   --header-space: 88px;
-  --scroll-thumb: #c5d0dc;
-  --scroll-thumb-hover: #93a4ba;
+  --scroll-thumb: #d4d4d8;
+  --scroll-thumb-hover: #a1a1aa;
   color-scheme: light;
 }
 
 @mixin dark-tokens {
-  /* On the dark background the navy disappears, so interactive color moves to a light azure. */
-  --brand: #8cc4d8;
-  --brand-strong: #b3d9e6;
-  --brand-soft: rgba(89, 161, 186, 0.16);
-  --on-brand: #00183b;
-  --accent: #a78bdb;
-  --link: #a9d2e1;
-  --grad-stops: #2c6f89, #59a1ba, #7d5fb8;
+  --brand: #fafafa;
+  --brand-strong: #ffffff;
+  --brand-soft: rgba(255, 255, 255, 0.08);
+  --on-brand: #18181b;
+  --accent: #a1a1aa;
+  --link: #e4e4e7;
+  --grad-stops: #3f3f46, #71717a, #a1a1aa;
   --on-grad: #ffffff;
-  --bg: #000c1d;
-  --surface: #031631;
-  --surface-2: #08203f;
-  --surface-hover: #0c2648;
-  --text: #e9f0f8;
-  --text-2: #a8b8cf;
-  --text-3: #7488a6;
-  --border: #13294a;
-  --border-strong: #1e3a63;
+  --bg: #09090b;
+  --surface: #141416;
+  --surface-2: #1d1d20;
+  --surface-hover: #222226;
+  --text: #fafafa;
+  --text-2: #d4d4d8;
+  --text-3: #a1a1aa;
+  --border: #27272a;
+  --border-strong: #3a3a40;
   --danger: #ff7a84;
   --danger-soft: rgba(255, 122, 132, 0.12);
   --warn: #f6bd55;
   --warn-soft: rgba(246, 189, 85, 0.12);
   --ok: #4ee0a0;
   --ok-soft: rgba(78, 224, 160, 0.12);
-  --code-bg: #000a19;
-  --code-head: #021631;
-  --code-border: #13294a;
+  --code-bg: #0c0c0e;
+  --code-head: #161618;
+  --code-border: #27272a;
   --overlay: rgba(0, 0, 0, 0.65);
-  --hero-glow: rgba(89, 161, 186, 0.2);
+  --hero-glow: rgba(161, 161, 170, 0.1);
   --m-get-bg: rgba(56, 189, 248, 0.14);   --m-get: #7dd3fc;
   --m-post-bg: rgba(74, 222, 128, 0.14);  --m-post: #86efac;
   --m-put-bg: rgba(250, 204, 21, 0.14);   --m-put: #fcd34d;
@@ -94,8 +91,8 @@
   --m-delete-bg: rgba(248, 113, 113, 0.14); --m-delete: #fca5a5;
   --shadow: 0 1px 2px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.02);
   --shadow-lg: 0 16px 40px rgba(0, 0, 0, 0.55);
-  --scroll-thumb: #1c3558;
-  --scroll-thumb-hover: #2e4f7d;
+  --scroll-thumb: #3a3a40;
+  --scroll-thumb-hover: #52525b;
   color-scheme: dark;
 }
 
@@ -259,11 +256,10 @@ input[type='checkbox'] { width: auto; }
 
 .empty { text-align: center; padding: 48px 16px; color: var(--text-2); }
 
-/* ===== Brand logos =====
-   The logo files are white on transparent, so on light surfaces they would vanish.
-   These classes use the file as a mask and paint it with currentColor, so the logo
-   takes the text color of wherever it sits (dark on light, light on dark).
-   On always-dark surfaces (header, footer) use the <img> directly. */
+/* ===== Brand symbol =====
+   Neutral symbol of the whitelabel (brand/mark.svg), used as a mask and painted with
+   currentColor, so it takes the text color of wherever it sits (dark on light, light on
+   dark). An organization's own logo comes from LOGO_URL (see app-brand-logo). */
 .brand-mark {
   display: inline-block;
   flex-shrink: 0;
@@ -271,6 +267,4 @@ input[type='checkbox'] { width: auto; }
   -webkit-mask: var(--logo) center / contain no-repeat;
   mask: var(--logo) center / contain no-repeat;
 }
-.brand-symbol { --logo: url('/brand/simbolo.webp'); aspect-ratio: 4308 / 4105; }
-.brand-full { --logo: url('/brand/logo.webp'); aspect-ratio: 10366 / 2090; }
-.brand-office { --logo: url('/brand/logo-escritorio.png'); aspect-ratio: 3419 / 935; }
+.brand-symbol { --logo: url('/brand/mark.svg'); aspect-ratio: 1; }
