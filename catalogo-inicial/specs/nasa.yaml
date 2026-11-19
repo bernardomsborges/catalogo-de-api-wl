@@ -1,0 +1,105 @@
+openapi: 3.0.3
+info:
+  title: NASA APIs
+  version: "1.0.0"
+  description: |
+    APIs abertas da NASA: a foto astronômica do dia (APOD), as imagens da Terra inteira tiradas pela
+    câmera EPIC e os asteroides que passam perto da Terra (NeoWs).
+
+    Exige uma chave gratuita (`api_key`), pedida em https://api.nasa.gov. Para testar, a chave
+    `DEMO_KEY` funciona com limite baixo (30 chamadas por hora por IP).
+    (Documento OpenAPI escrito para o catálogo. A API de fotos dos rovers de Marte foi desativada pela
+    NASA e não está aqui.)
+servers:
+  - url: https://api.nasa.gov
+    description: Produção
+tags:
+  - name: APOD
+  - name: EPIC
+  - name: Asteroides (NeoWs)
+security:
+  - apiKey: []
+components:
+  securitySchemes:
+    apiKey:
+      type: apiKey
+      in: query
+      name: api_key
+      description: Chave gratuita de https://api.nasa.gov (ou DEMO_KEY para testes).
+paths:
+  /planetary/apod:
+    get:
+      tags: [APOD]
+      summary: Foto astronômica do dia
+      parameters:
+        - { name: date, in: query, description: Data da foto (AAAA-MM-DD); sem ela, a de hoje, schema: { type: string, format: date }, example: "2025-01-01" }
+        - { name: thumbs, in: query, description: true para a miniatura quando o APOD é um vídeo, schema: { type: boolean }, example: true }
+      responses:
+        "200":
+          description: A foto (ou vídeo), com título e explicação.
+          content:
+            application/json:
+              example: { date: "2025-01-01", title: "Título da foto", explanation: "Explicação do astrônomo.", media_type: image, url: "https://apod.nasa.gov/apod/image/2501/foto.jpg", hdurl: "https://apod.nasa.gov/apod/image/2501/foto_big.jpg" }
+        "403":
+          description: Chave ausente, inválida ou acima do limite.
+          content:
+            application/json:
+              example: { error: { code: API_KEY_INVALID, message: An invalid api_key was supplied. } }
+  /EPIC/api/natural:
+    get:
+      tags: [EPIC]
+      summary: Imagens mais recentes da Terra
+      responses:
+        "200":
+          description: Imagens do dia mais recente, com a posição da Terra e do Sol.
+          content:
+            application/json:
+              example: [{ identifier: "20261116005516", caption: "This image was taken by NASA's EPIC camera onboard the NOAA DSCOVR spacecraft", image: epic_1b_20261116005516, date: "2026-11-16 00:50:27" }]
+  /EPIC/api/natural/all:
+    get:
+      tags: [EPIC]
+      summary: Datas com imagens disponíveis
+      responses:
+        "200":
+          description: Todas as datas com imagens.
+          content:
+            application/json:
+              example: [{ date: "2026-11-16" }, { date: "2026-11-14" }]
+  /EPIC/api/natural/date/{data}:
+    get:
+      tags: [EPIC]
+      summary: Imagens da Terra de uma data
+      parameters:
+        - { name: data, in: path, required: true, description: Data (AAAA-MM-DD), schema: { type: string, format: date }, example: "2026-11-16" }
+      responses:
+        "200":
+          description: Imagens da data.
+          content:
+            application/json:
+              example: [{ identifier: "20261116005516", image: epic_1b_20261116005516, date: "2026-11-16 00:50:27" }]
+  /neo/rest/v1/feed:
+    get:
+      tags: [Asteroides (NeoWs)]
+      summary: Asteroides que passam perto da Terra num período
+      description: Período de até 7 dias.
+      parameters:
+        - { name: start_date, in: query, required: true, description: Data inicial (AAAA-MM-DD), schema: { type: string, format: date }, example: "2025-01-01" }
+        - { name: end_date, in: query, description: Data final (até 7 dias depois), schema: { type: string, format: date }, example: "2025-01-02" }
+      responses:
+        "200":
+          description: Asteroides por data de aproximação.
+          content:
+            application/json:
+              example: { element_count: 10, near_earth_objects: { "2025-01-01": [{ id: "3542519", name: "(2010 PK9)", is_potentially_hazardous_asteroid: true }] } }
+  /neo/rest/v1/neo/{asteroide}:
+    get:
+      tags: [Asteroides (NeoWs)]
+      summary: Consultar um asteroide
+      parameters:
+        - { name: asteroide, in: path, required: true, description: Id do asteroide (SPK-ID), schema: { type: string }, example: "3542519" }
+      responses:
+        "200":
+          description: Tamanho estimado, órbita e aproximações da Terra.
+          content:
+            application/json:
+              example: { id: "3542519", name: "(2010 PK9)", absolute_magnitude_h: 21.81, is_potentially_hazardous_asteroid: true }

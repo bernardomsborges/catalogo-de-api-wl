@@ -16,7 +16,7 @@ import { ApiCard } from '../../shared/api-card';
     <div class="container page">
       <header class="head">
         <h1>APIs</h1>
-        <p class="muted">Todas as APIs disponíveis para integração@if (brand.brand.org) { com {{ brand.brand.org }} }.</p>
+        <p class="muted">Todas as APIs disponíveis para integração{{ brand.brand.org ? ' com ' + brand.brand.org : '' }}.</p>
       </header>
 
       <div class="layout">

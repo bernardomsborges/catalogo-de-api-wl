@@ -1,0 +1,30 @@
+openapi: 3.0.3
+info:
+  title: HTTP Cat
+  version: "1.0.0"
+  description: |
+    Uma imagem de gato para cada código de status HTTP. Útil para páginas de erro, dashboards e
+    testes visuais.
+
+    Pública, sem autenticação. Site oficial: https://http.cat (documento OpenAPI escrito para o catálogo).
+servers:
+  - url: https://http.cat
+    description: Produção
+paths:
+  /{codigo}:
+    get:
+      summary: Imagem de um código de status
+      description: "Ex.: /404 para Not Found, /418 para I'm a teapot. Também aceita /{codigo}.jpg."
+      parameters:
+        - { name: codigo, in: path, required: true, description: Código de status HTTP, schema: { type: integer }, example: 404 }
+      responses:
+        "200":
+          description: A imagem do código (JPEG).
+          content:
+            image/jpeg:
+              example: (arquivo JPEG em binário)
+        "404":
+          description: Código sem imagem; a resposta é a imagem do 404.
+          content:
+            image/jpeg:
+              example: (arquivo JPEG em binário)

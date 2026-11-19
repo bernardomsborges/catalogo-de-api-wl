@@ -1,0 +1,36 @@
+openapi: 3.0.3
+info:
+  title: Open-Meteo — Previsão do tempo
+  version: "1.0.0"
+  description: |
+    Previsão do tempo global, por hora e por dia (até 16 dias), e as condições atuais, para qualquer
+    coordenada. Combina vários modelos meteorológicos nacionais.
+
+    Sem chave para uso não comercial (até 10 mil chamadas por dia). Documentação oficial:
+    https://open-meteo.com/en/docs (documento OpenAPI escrito para o catálogo).
+servers:
+  - url: https://api.open-meteo.com
+    description: Produção
+paths:
+  /v1/forecast:
+    get:
+      summary: Previsão e condições atuais de uma coordenada
+      parameters:
+        - { name: latitude, in: query, required: true, description: Latitude, schema: { type: number }, example: -19.92 }
+        - { name: longitude, in: query, required: true, description: Longitude, schema: { type: number }, example: -43.94 }
+        - { name: current, in: query, description: Variáveis das condições atuais, separadas por vírgula, schema: { type: string }, example: "temperature_2m,relative_humidity_2m,precipitation" }
+        - { name: hourly, in: query, description: Variáveis por hora, schema: { type: string }, example: "temperature_2m,precipitation_probability" }
+        - { name: daily, in: query, description: Variáveis por dia (exige timezone), schema: { type: string }, example: "temperature_2m_max,temperature_2m_min,precipitation_sum" }
+        - { name: timezone, in: query, description: Fuso horário (ou auto), schema: { type: string }, example: America/Sao_Paulo }
+        - { name: forecast_days, in: query, description: Dias de previsão (1 a 16), schema: { type: integer }, example: 3 }
+      responses:
+        "200":
+          description: Os valores pedidos, com as unidades.
+          content:
+            application/json:
+              example: { latitude: -19.93, longitude: -43.97, timezone: America/Sao_Paulo, current_units: { temperature_2m: "°C" }, current: { time: "2026-11-19T10:00", temperature_2m: 24.1 }, daily: { time: ["2026-11-19"], temperature_2m_max: [28.4], temperature_2m_min: [17.9], precipitation_sum: [3.2] } }
+        "400":
+          description: Parâmetro inválido.
+          content:
+            application/json:
+              example: { error: true, reason: "Cannot initialize WeatherVariable from invalid String value tempratura" }

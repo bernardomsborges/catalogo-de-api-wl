@@ -5,6 +5,34 @@ Na **primeira vez** que o portal sobe, com o catálogo ainda vazio, ele importa 
 exemplo. A importação roda uma vez só: o resultado fica registrado e não se repete, mesmo que as APIs
 sejam excluídas depois.
 
+## O catálogo que vem pronto
+
+O `catalogo.json` traz 14 APIs públicas, em quatro categorias:
+
+| Categoria | APIs |
+|---|---|
+| Dados abertos do Brasil | BrasilAPI · IBGE · Portal da Transparência (CGU) |
+| Utilitários para devs | JSONPlaceholder · REST Countries · HTTP Cat · HTTP Dog |
+| Geolocalização, clima e espaço | Nominatim (OpenStreetMap) · Open-Meteo (previsão e histórico) · NASA (APOD, EPIC, asteroides) |
+| Entretenimento e cultura | PokéAPI · OMDb · Open Library |
+
+**De onde vem cada documento**
+- **Documento oficial, por link:** BrasilAPI (achado na página de docs), Portal da Transparência,
+  REST Countries, PokéAPI, OMDb e Open Library. A sincronização fica ligada e acompanha o que mudar.
+- **Escrito para o catálogo, em `specs/`:** IBGE, JSONPlaceholder, HTTP Cat, HTTP Dog, Nominatim,
+  Open-Meteo e NASA, que não publicam OpenAPI. Os documentos cobrem as rotas principais, conferidas na
+  API real, e indicam a documentação oficial de cada uma.
+
+**Exigem chave gratuita:** Portal da Transparência (`chave-api-dados`), NASA (`api_key`; `DEMO_KEY` serve
+para testes), OMDb (`apikey`) e REST Countries, que passou a exigir conta (Bearer). O **Nominatim** não
+pede chave, mas a política de uso exige um `User-Agent` que identifique a aplicação e no máximo 1
+requisição por segundo.
+
+**Ficaram de fora**
+- As listas `public-apis/public-apis` e `public-api-lists/public-api-lists` são catálogos de APIs, não
+  APIs. Servem de fonte para escolher as próximas.
+- A API de fotos dos rovers de Marte da NASA foi desativada.
+
 ## Como configurar
 
 No `.env` (ou nas variáveis do container):

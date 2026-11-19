@@ -1,0 +1,136 @@
+openapi: 3.0.3
+info:
+  title: IBGE — Serviço de Dados
+  version: "1.0.0"
+  description: |
+    APIs do Instituto Brasileiro de Geografia e Estatística: divisão territorial (regiões, estados,
+    mesorregiões, microrregiões e municípios), frequência de nomes do Censo e os agregados do SIDRA
+    (estatísticas sociais e econômicas, como a população estimada).
+
+    Pública, sem autenticação. Documentação oficial: https://servicodados.ibge.gov.br/api/docs
+    (documento OpenAPI escrito para o catálogo: o IBGE não publica um).
+  contact:
+    name: IBGE
+    url: https://servicodados.ibge.gov.br/api/docs
+servers:
+  - url: https://servicodados.ibge.gov.br/api
+    description: Produção
+tags:
+  - name: Localidades
+  - name: Nomes
+  - name: Agregados (SIDRA)
+paths:
+  /v1/localidades/regioes:
+    get:
+      tags: [Localidades]
+      summary: Listar as grandes regiões
+      responses:
+        "200":
+          description: As cinco grandes regiões.
+          content:
+            application/json:
+              example: [{ id: 1, sigla: N, nome: Norte }, { id: 3, sigla: SE, nome: Sudeste }]
+  /v1/localidades/estados:
+    get:
+      tags: [Localidades]
+      summary: Listar os estados
+      parameters:
+        - { name: orderBy, in: query, description: Campo de ordenação, schema: { type: string, enum: [id, nome] }, example: nome }
+      responses:
+        "200":
+          description: As 27 unidades da federação, com a região.
+          content:
+            application/json:
+              example: [{ id: 31, sigla: MG, nome: Minas Gerais, regiao: { id: 3, sigla: SE, nome: Sudeste } }]
+  /v1/localidades/estados/{UF}/municipios:
+    get:
+      tags: [Localidades]
+      summary: Listar os municípios de um estado
+      parameters:
+        - { name: UF, in: path, required: true, description: Sigla ou código IBGE do estado, schema: { type: string }, example: MG }
+      responses:
+        "200":
+          description: Municípios do estado, com micro e mesorregião.
+          content:
+            application/json:
+              example: [{ id: 3106200, nome: Belo Horizonte, microrregiao: { id: 31030, nome: Belo Horizonte } }]
+  /v1/localidades/estados/{UF}/microrregioes:
+    get:
+      tags: [Localidades]
+      summary: Listar as microrregiões de um estado
+      parameters:
+        - { name: UF, in: path, required: true, description: Sigla ou código IBGE do estado, schema: { type: string }, example: "31" }
+      responses:
+        "200":
+          description: Microrregiões do estado, com a mesorregião.
+          content:
+            application/json:
+              example: [{ id: 31001, nome: Unaí, mesorregiao: { id: 3101, nome: Noroeste de Minas } }]
+  /v1/localidades/municipios/{municipio}:
+    get:
+      tags: [Localidades]
+      summary: Consultar um município pelo código IBGE
+      parameters:
+        - { name: municipio, in: path, required: true, description: Código IBGE do município (7 dígitos), schema: { type: integer }, example: 3106200 }
+      responses:
+        "200":
+          description: O município, com micro, meso, região imediata e estado.
+          content:
+            application/json:
+              example: { id: 3106200, nome: Belo Horizonte, microrregiao: { id: 31030, nome: Belo Horizonte } }
+  /v2/censos/nomes/{nome}:
+    get:
+      tags: [Nomes]
+      summary: Frequência de um nome por década
+      description: Quantas pessoas foram registradas com o nome, por década de nascimento (Censo 2010).
+      parameters:
+        - { name: nome, in: path, required: true, description: Nome (ou vários separados por "|"), schema: { type: string }, example: maria }
+        - { name: localidade, in: query, description: Código IBGE do estado ou município, schema: { type: string }, example: "31" }
+      responses:
+        "200":
+          description: Frequência por década.
+          content:
+            application/json:
+              example: [{ nome: MARIA, localidade: BR, res: [{ periodo: "1930[", frequencia: 336477 }] }]
+  /v2/censos/nomes/ranking:
+    get:
+      tags: [Nomes]
+      summary: Nomes mais comuns
+      parameters:
+        - { name: localidade, in: query, description: Código IBGE do estado ou município, schema: { type: string }, example: "31" }
+        - { name: decada, in: query, description: Década de nascimento, schema: { type: integer }, example: 1990 }
+        - { name: sexo, in: query, description: M ou F, schema: { type: string, enum: [M, F] }, example: F }
+      responses:
+        "200":
+          description: Ranking dos nomes.
+          content:
+            application/json:
+              example: [{ localidade: "31", res: [{ nome: MARIA, frequencia: 1307650, ranking: 1 }] }]
+  /v3/agregados/{agregado}/metadados:
+    get:
+      tags: [Agregados (SIDRA)]
+      summary: Descrição de um agregado (tabela do SIDRA)
+      parameters:
+        - { name: agregado, in: path, required: true, description: Número da tabela no SIDRA, schema: { type: integer }, example: 6579 }
+      responses:
+        "200":
+          description: Pesquisa, períodos, variáveis e níveis territoriais disponíveis.
+          content:
+            application/json:
+              example: { id: 6579, nome: População residente estimada, URL: "https://sidra.ibge.gov.br/tabela/6579" }
+  /v3/agregados/{agregado}/periodos/{periodos}/variaveis/{variavel}:
+    get:
+      tags: [Agregados (SIDRA)]
+      summary: Valores de uma variável
+      description: "Ex.: população estimada de Minas Gerais em 2021 (agregado 6579, variável 9324, localidades=N3[31])."
+      parameters:
+        - { name: agregado, in: path, required: true, description: Número da tabela no SIDRA, schema: { type: integer }, example: 6579 }
+        - { name: periodos, in: path, required: true, description: Períodos separados por "|" (ou -1 para o último), schema: { type: string }, example: "2021" }
+        - { name: variavel, in: path, required: true, description: Código da variável, schema: { type: string }, example: "9324" }
+        - { name: localidades, in: query, required: true, description: "Nível e códigos: N1[all] (Brasil), N3[31] (estado), N6[3106200] (município)", schema: { type: string }, example: "N3[31]" }
+      responses:
+        "200":
+          description: Série de valores por localidade.
+          content:
+            application/json:
+              example: [{ id: "9324", variavel: População residente estimada, unidade: Pessoas, resultados: [{ series: [{ localidade: { id: "31", nome: Minas Gerais }, serie: { "2021": "21411923" } }] }] }]

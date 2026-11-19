@@ -1,0 +1,56 @@
+openapi: 3.0.3
+info:
+  title: Nominatim (OpenStreetMap)
+  version: "1.0.0"
+  description: |
+    Geocodificação com os dados abertos do OpenStreetMap: endereço → coordenadas (busca) e
+    coordenadas → endereço (reversa). Alternativa livre ao Google Maps.
+
+    Pública e sem chave, mas o servidor público tem **política de uso**: no máximo 1 requisição por
+    segundo, um `User-Agent` (ou `Referer`) que identifique a sua aplicação e nada de uso em massa.
+    Política: https://operations.osmfoundation.org/policies/nominatim/ · Documentação:
+    https://nominatim.org/release-docs/latest/api/Overview/ (documento OpenAPI escrito para o catálogo).
+servers:
+  - url: https://nominatim.openstreetmap.org
+    description: Servidor público da OSM Foundation
+paths:
+  /search:
+    get:
+      summary: Buscar um endereço ou lugar
+      parameters:
+        - { name: q, in: query, required: true, description: Texto livre da busca, schema: { type: string }, example: Praça da Liberdade, Belo Horizonte }
+        - { name: format, in: query, description: Formato da resposta, schema: { type: string, enum: [json, jsonv2, geojson, xml] }, example: json }
+        - { name: limit, in: query, description: Máximo de resultados (até 40), schema: { type: integer }, example: 1 }
+        - { name: countrycodes, in: query, description: Só nestes países (ISO 3166-1 alfa-2), schema: { type: string }, example: br }
+        - { name: addressdetails, in: query, description: 1 para incluir o endereço por partes, schema: { type: integer }, example: 1 }
+      responses:
+        "200":
+          description: Lugares encontrados, com latitude, longitude e nome completo.
+          content:
+            application/json:
+              example: [{ place_id: 10947757, lat: "-19.9227318", lon: "-43.9450948", display_name: "Belo Horizonte, Minas Gerais, Brasil", type: city }]
+  /reverse:
+    get:
+      summary: Endereço de uma coordenada
+      parameters:
+        - { name: lat, in: query, required: true, description: Latitude, schema: { type: number }, example: -19.92 }
+        - { name: lon, in: query, required: true, description: Longitude, schema: { type: number }, example: -43.94 }
+        - { name: format, in: query, description: Formato da resposta, schema: { type: string, enum: [json, jsonv2, geojson, xml] }, example: json }
+        - { name: zoom, in: query, description: "Nível de detalhe: 3 (país) a 18 (prédio)", schema: { type: integer }, example: 18 }
+      responses:
+        "200":
+          description: O lugar mais próximo, com o endereço.
+          content:
+            application/json:
+              example: { place_id: 10996230, lat: "-19.92", lon: "-43.94", display_name: "Belo Horizonte, Minas Gerais, Brasil", address: { city: Belo Horizonte, state: Minas Gerais, country: Brasil } }
+  /status:
+    get:
+      summary: Situação do servidor
+      parameters:
+        - { name: format, in: query, description: Formato da resposta, schema: { type: string, enum: [json, text] }, example: json }
+      responses:
+        "200":
+          description: Situação e data da última atualização dos dados.
+          content:
+            application/json:
+              example: { status: 0, message: OK, data_updated: "2026-11-19T13:02:51+00:00" }

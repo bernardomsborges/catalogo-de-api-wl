@@ -1,0 +1,119 @@
+[
+  {
+    "source": "https://brasilapi.com.br/docs",
+    "name": "BrasilAPI",
+    "summary": "CEP, CNPJ, tabela FIPE, feriados nacionais, DDD, bancos e outros dados públicos do Brasil, sem autenticação.",
+    "category": "Dados abertos do Brasil",
+    "owner": "Comunidade BrasilAPI",
+    "tags": ["cep", "cnpj", "fipe", "feriados"],
+    "status": "estavel"
+  },
+  {
+    "source": "specs/ibge.yaml",
+    "summary": "Estados, municípios, microrregiões, nomes do Censo e estatísticas do SIDRA, sem autenticação.",
+    "category": "Dados abertos do Brasil",
+    "owner": "IBGE",
+    "tags": ["localidades", "censo", "estatística"],
+    "status": "estavel"
+  },
+  {
+    "source": "https://api.portaldatransparencia.gov.br/v3/api-docs",
+    "name": "Portal da Transparência",
+    "summary": "Contratos, licitações, despesas e servidores do governo federal. Exige chave gratuita.",
+    "category": "Dados abertos do Brasil",
+    "owner": "Controladoria-Geral da União (CGU)",
+    "tags": ["transparência", "gastos públicos"],
+    "status": "estavel"
+  },
+  {
+    "source": "specs/jsonplaceholder.yaml",
+    "summary": "API falsa para testar GET, POST, PUT, PATCH e DELETE com posts, comentários, usuários e tarefas.",
+    "category": "Utilitários para devs",
+    "owner": "Typicode",
+    "tags": ["testes", "mock"],
+    "status": "estavel"
+  },
+  {
+    "source": "https://restcountries.com/openapi.json",
+    "name": "REST Countries",
+    "summary": "Bandeiras, moedas, idiomas, capitais e coordenadas de todos os países do mundo. Exige chave (Bearer).",
+    "category": "Utilitários para devs",
+    "owner": "REST Countries",
+    "tags": ["países"],
+    "status": "estavel"
+  },
+  {
+    "source": "specs/http-cat.yaml",
+    "summary": "Uma imagem de gato para cada código de status HTTP.",
+    "category": "Utilitários para devs",
+    "tags": ["http", "imagens"],
+    "status": "estavel"
+  },
+  {
+    "source": "specs/http-dog.yaml",
+    "summary": "Uma imagem de cachorro para cada código de status HTTP, em imagem ou JSON.",
+    "category": "Utilitários para devs",
+    "tags": ["http", "imagens"],
+    "status": "estavel"
+  },
+  {
+    "source": "specs/nominatim.yaml",
+    "summary": "Geocodificação livre do OpenStreetMap: endereço para coordenadas e coordenadas para endereço.",
+    "category": "Geolocalização, clima e espaço",
+    "owner": "OpenStreetMap Foundation",
+    "tags": ["mapas", "geocodificação"],
+    "status": "estavel"
+  },
+  {
+    "source": "specs/open-meteo-previsao.yaml",
+    "summary": "Previsão do tempo e condições atuais para qualquer coordenada, sem chave para uso não comercial.",
+    "category": "Geolocalização, clima e espaço",
+    "owner": "Open-Meteo",
+    "tags": ["clima", "previsão"],
+    "status": "estavel"
+  },
+  {
+    "source": "specs/open-meteo-historico.yaml",
+    "summary": "Séries históricas do tempo desde 1940 para qualquer coordenada.",
+    "category": "Geolocalização, clima e espaço",
+    "owner": "Open-Meteo",
+    "tags": ["clima", "histórico"],
+    "status": "estavel"
+  },
+  {
+    "source": "specs/nasa.yaml",
+    "summary": "Foto astronômica do dia, imagens da Terra (EPIC) e asteroides próximos. Exige chave gratuita.",
+    "category": "Geolocalização, clima e espaço",
+    "owner": "NASA",
+    "tags": ["espaço", "astronomia"],
+    "status": "estavel"
+  },
+  {
+    "source": "https://raw.githubusercontent.com/PokeAPI/pokeapi/master/openapi.yml",
+    "name": "PokéAPI",
+    "summary": "Pokémon, habilidades, movimentos, tipos e sprites. Muito usada para aprender e testar.",
+    "category": "Entretenimento e cultura",
+    "owner": "PokéAPI",
+    "tags": ["pokémon", "jogos"],
+    "status": "estavel"
+  },
+  {
+    "source": "https://www.omdbapi.com/swagger.json",
+    "name": "OMDb (Open Movie Database)",
+    "baseUrl": "https://www.omdbapi.com",
+    "summary": "Filmes, séries e atores, com notas do IMDb e do Rotten Tomatoes. Exige chave gratuita.",
+    "category": "Entretenimento e cultura",
+    "owner": "OMDb API",
+    "tags": ["filmes", "séries"],
+    "status": "estavel"
+  },
+  {
+    "source": "https://openlibrary.org/openapi.json",
+    "name": "Open Library",
+    "summary": "Catálogo aberto do Internet Archive com milhões de livros, autores e capas.",
+    "category": "Entretenimento e cultura",
+    "owner": "Internet Archive",
+    "tags": ["livros"],
+    "status": "estavel"
+  }
+]

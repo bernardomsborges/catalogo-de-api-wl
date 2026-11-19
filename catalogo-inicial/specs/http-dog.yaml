@@ -1,0 +1,34 @@
+openapi: 3.0.3
+info:
+  title: HTTP Dog
+  version: "1.0.0"
+  description: |
+    Uma imagem de cachorro para cada código de status HTTP, em JPEG, WebP ou com os dados em JSON.
+
+    Pública, sem autenticação. Site oficial: https://http.dog (documento OpenAPI escrito para o catálogo).
+servers:
+  - url: https://http.dog
+    description: Produção
+paths:
+  /{codigo}.jpg:
+    get:
+      summary: Imagem de um código de status
+      parameters:
+        - { name: codigo, in: path, required: true, description: Código de status HTTP, schema: { type: integer }, example: 404 }
+      responses:
+        "200":
+          description: A imagem do código (JPEG).
+          content:
+            image/jpeg:
+              example: (arquivo JPEG em binário)
+  /{codigo}.json:
+    get:
+      summary: Dados de um código de status
+      parameters:
+        - { name: codigo, in: path, required: true, description: Código de status HTTP, schema: { type: integer }, example: 404 }
+      responses:
+        "200":
+          description: Título do código e os links das imagens.
+          content:
+            application/json:
+              example: { status_code: 404, title: Not Found, url: "https://http.dog/404", image: { avif: "https://http.dog/404.avif", jpg: "https://http.dog/404.jpg" } }

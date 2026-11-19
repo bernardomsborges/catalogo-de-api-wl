@@ -1,0 +1,155 @@
+openapi: 3.0.3
+info:
+  title: JSONPlaceholder
+  version: "1.0.0"
+  description: |
+    API falsa para testes e protótipos: posts, comentários, usuários e tarefas. Aceita GET, POST, PUT,
+    PATCH e DELETE, mas nada é gravado de verdade: a resposta só simula a operação.
+
+    Pública, sem autenticação. Documentação oficial: https://jsonplaceholder.typicode.com/guide/
+    (documento OpenAPI escrito para o catálogo).
+servers:
+  - url: https://jsonplaceholder.typicode.com
+    description: Produção
+tags:
+  - name: Posts
+  - name: Usuários
+  - name: Tarefas
+components:
+  schemas:
+    Post:
+      type: object
+      properties:
+        userId: { type: integer }
+        id: { type: integer }
+        title: { type: string }
+        body: { type: string }
+paths:
+  /posts:
+    get:
+      tags: [Posts]
+      summary: Listar posts
+      parameters:
+        - { name: userId, in: query, description: Só os posts de um usuário, schema: { type: integer }, example: 1 }
+      responses:
+        "200":
+          description: Os 100 posts (ou os do usuário).
+          content:
+            application/json:
+              example: [{ userId: 1, id: 1, title: sunt aut facere, body: quia et suscipit }]
+    post:
+      tags: [Posts]
+      summary: Criar um post (simulado)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/Post" }
+            example: { title: Meu post, body: Conteúdo, userId: 1 }
+      responses:
+        "201":
+          description: O post com um id novo (não é gravado).
+          content:
+            application/json:
+              example: { id: 101, title: Meu post, body: Conteúdo, userId: 1 }
+  /posts/{id}:
+    parameters:
+      - { name: id, in: path, required: true, description: Id do post (1 a 100), schema: { type: integer }, example: 1 }
+    get:
+      tags: [Posts]
+      summary: Consultar um post
+      responses:
+        "200":
+          description: O post.
+          content:
+            application/json:
+              example: { userId: 1, id: 1, title: sunt aut facere, body: quia et suscipit }
+        "404":
+          description: Post não encontrado.
+          content:
+            application/json:
+              example: {}
+    put:
+      tags: [Posts]
+      summary: Substituir um post (simulado)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/Post" }
+            example: { id: 1, title: Título novo, body: Conteúdo novo, userId: 1 }
+      responses:
+        "200":
+          description: O post como ficaria.
+          content:
+            application/json:
+              example: { id: 1, title: Título novo, body: Conteúdo novo, userId: 1 }
+    patch:
+      tags: [Posts]
+      summary: Alterar campos de um post (simulado)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            example: { title: Só o título }
+      responses:
+        "200":
+          description: O post como ficaria.
+          content:
+            application/json:
+              example: { userId: 1, id: 1, title: Só o título, body: quia et suscipit }
+    delete:
+      tags: [Posts]
+      summary: Excluir um post (simulado)
+      responses:
+        "200":
+          description: Corpo vazio.
+          content:
+            application/json:
+              example: {}
+  /posts/{id}/comments:
+    get:
+      tags: [Posts]
+      summary: Comentários de um post
+      parameters:
+        - { name: id, in: path, required: true, description: Id do post, schema: { type: integer }, example: 1 }
+      responses:
+        "200":
+          description: Comentários do post.
+          content:
+            application/json:
+              example: [{ postId: 1, id: 1, name: id labore ex, email: Eliseo@gardner.biz, body: laudantium enim }]
+  /users:
+    get:
+      tags: [Usuários]
+      summary: Listar usuários
+      responses:
+        "200":
+          description: Os 10 usuários, com endereço e empresa.
+          content:
+            application/json:
+              example: [{ id: 1, name: Leanne Graham, username: Bret, email: Sincere@april.biz }]
+  /users/{id}/todos:
+    get:
+      tags: [Tarefas]
+      summary: Tarefas de um usuário
+      parameters:
+        - { name: id, in: path, required: true, description: Id do usuário (1 a 10), schema: { type: integer }, example: 1 }
+      responses:
+        "200":
+          description: Tarefas do usuário.
+          content:
+            application/json:
+              example: [{ userId: 1, id: 1, title: delectus aut autem, completed: false }]
+  /todos:
+    get:
+      tags: [Tarefas]
+      summary: Listar tarefas
+      parameters:
+        - { name: completed, in: query, description: Filtrar por concluídas, schema: { type: boolean }, example: false }
+      responses:
+        "200":
+          description: As 200 tarefas (ou as filtradas).
+          content:
+            application/json:
+              example: [{ userId: 1, id: 1, title: delectus aut autem, completed: false }]

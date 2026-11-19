@@ -40,9 +40,11 @@ npm run import:check                            # confere as fontes sem salvar n
 - APIs vindas de link já saem com a sincronização do OpenAPI ligada.
 - A importação roda uma vez só (fica registrada) e tenta de novo na próxima subida se todas as fontes falharem.
 
-Detalhes e o formato do manifesto estão em [`catalogo-inicial/README.md`](catalogo-inicial/README.md).
-Para ver funcionando, há um manifesto de exemplo com as APIs públicas de demonstração do Swagger Petstore:
-`CATALOG_IMPORT=catalogo-inicial/catalogo.exemplo.json`.
+O projeto já traz um catálogo inicial em `catalogo-inicial/catalogo.json`, com 14 APIs públicas:
+BrasilAPI, IBGE, Portal da Transparência, JSONPlaceholder, REST Countries, HTTP Cat e HTTP Dog,
+Nominatim, Open-Meteo, NASA, PokéAPI, OMDb e Open Library. Detalhes, o formato do manifesto e as APIs
+que exigem chave estão em [`catalogo-inicial/README.md`](catalogo-inicial/README.md). Há também um
+exemplo menor, só com o Swagger Petstore: `catalogo-inicial/catalogo.exemplo.json`.
 
 ## O que tem
 

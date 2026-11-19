@@ -1,0 +1,36 @@
+openapi: 3.0.3
+info:
+  title: Open-Meteo — Histórico do tempo
+  version: "1.0.0"
+  description: |
+    Séries históricas do tempo desde 1940 (reanálise ERA5 e outros), por hora ou por dia, para
+    qualquer coordenada.
+
+    Sem chave para uso não comercial. Documentação oficial: https://open-meteo.com/en/docs/historical-weather-api
+    (documento OpenAPI escrito para o catálogo).
+servers:
+  - url: https://archive-api.open-meteo.com
+    description: Produção
+paths:
+  /v1/archive:
+    get:
+      summary: Série histórica de uma coordenada
+      parameters:
+        - { name: latitude, in: query, required: true, description: Latitude, schema: { type: number }, example: -19.92 }
+        - { name: longitude, in: query, required: true, description: Longitude, schema: { type: number }, example: -43.94 }
+        - { name: start_date, in: query, required: true, description: Data inicial (AAAA-MM-DD), schema: { type: string, format: date }, example: "2025-01-01" }
+        - { name: end_date, in: query, required: true, description: Data final (AAAA-MM-DD), schema: { type: string, format: date }, example: "2025-01-31" }
+        - { name: daily, in: query, description: Variáveis por dia (exige timezone), schema: { type: string }, example: "temperature_2m_max,precipitation_sum" }
+        - { name: hourly, in: query, description: Variáveis por hora, schema: { type: string }, example: temperature_2m }
+        - { name: timezone, in: query, description: Fuso horário (ou auto), schema: { type: string }, example: America/Sao_Paulo }
+      responses:
+        "200":
+          description: Os valores do período, com as unidades.
+          content:
+            application/json:
+              example: { latitude: -19.93, longitude: -43.97, daily_units: { temperature_2m_max: "°C" }, daily: { time: ["2025-01-01", "2025-01-02"], temperature_2m_max: [27.9, 29.1], precipitation_sum: [12.4, 0.0] } }
+        "400":
+          description: Parâmetro inválido ou período fora do disponível.
+          content:
+            application/json:
+              example: { error: true, reason: "Parameter 'start_date' is out of allowed range" }
