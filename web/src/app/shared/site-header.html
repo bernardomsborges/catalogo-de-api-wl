@@ -1,0 +1,153 @@
+<div class="bar-wrap" [class.compact]="scrolled()">
+  <header class="bar">
+    <div class="full">
+    <a routerLink="/" class="brand" aria-label="Automatiza.MG — Catálogo de APIs, início">
+      <img src="brand/logo.webp" alt="" class="brand-logo" width="149" height="30" />
+      <span class="brand-divider" aria-hidden="true"></span>
+      <span class="brand-sub">Catálogo de APIs</span>
+    </a>
+
+    <nav class="nav" aria-label="Principal">
+      <!-- APIs (mega menu) -->
+      <div class="dd" (mouseenter)="hoverOpen('apis')" (mouseleave)="hoverClose()" (focusout)="focusLeft($event, 'apis')">
+        <button type="button" class="nav-item" [class.on]="open() === 'apis'" data-menu="apis" [attr.aria-expanded]="open() === 'apis'" (click)="toggle('apis')">
+          APIs <span class="chev" aria-hidden="true"></span>
+        </button>
+        @if (open() === 'apis') {
+          <div class="panel mega">
+            <div class="mega-col">
+              <span class="panel-title">Categorias</span>
+              @for (c of categories(); track c.name) {
+                <a class="panel-link" [routerLink]="['/apis']" [queryParams]="{ categoria: c.name }">
+                  {{ c.name }} <span class="count">{{ c.count }}</span>
+                </a>
+              }
+            </div>
+            <div class="mega-col wide">
+              <span class="panel-title">APIs</span>
+              <div class="api-grid">
+                @for (a of apis().slice(0, 8); track a.id) {
+                  <a class="api-link" [routerLink]="['/apis', a.slug]">
+                    <span class="api-icon" aria-hidden="true">{{ a.name.charAt(0) }}</span>
+                    <span>
+                      <strong>{{ a.name }}</strong>
+                      <span class="desc">{{ a.summary }}</span>
+                    </span>
+                  </a>
+                }
+              </div>
+              <a class="see-all" routerLink="/apis">Ver todas as {{ apis().length }} APIs →</a>
+            </div>
+          </div>
+        }
+      </div>
+
+      <!-- Novidades -->
+      <div class="dd" (mouseenter)="hoverOpen('novidades')" (mouseleave)="hoverClose()" (focusout)="focusLeft($event, 'novidades')">
+        <button type="button" class="nav-item" [class.on]="open() === 'novidades'" data-menu="novidades" [attr.aria-expanded]="open() === 'novidades'" (click)="toggle('novidades')">
+          Novidades <span class="chev" aria-hidden="true"></span>
+        </button>
+        @if (open() === 'novidades') {
+          <div class="panel news">
+            @for (n of news(); track n.slug + n.version) {
+              <a class="news-link" [routerLink]="['/apis', n.slug, 'changelog']">
+                <span class="news-meta">{{ n.api }} · v{{ n.version }} · {{ formatDate(n.date) }}</span>
+                <span class="news-text">{{ n.notes }}</span>
+              </a>
+            } @empty {
+              <span class="panel-empty">Nenhuma novidade publicada.</span>
+            }
+          </div>
+        }
+      </div>
+      <a routerLink="/receapitos" class="nav-item" routerLinkActive="on">ReceAPItos</a>
+      <a routerLink="/status" class="nav-item" routerLinkActive="on">Status</a>
+    </nav>
+
+    </div>
+
+    <div class="actions">
+      <form class="search" role="search" (submit)="search(q, $event)">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7" /><path d="m20 20-3.5-3.5" /></svg>
+        <label class="sr-only" for="hd-search">Buscar APIs</label>
+        <input #q id="hd-search" type="search" placeholder="Buscar APIs" autocomplete="off" />
+      </form>
+
+      <div class="dd theme-dd" (mouseenter)="hoverOpen('tema')" (mouseleave)="hoverClose()" (focusout)="focusLeft($event, 'tema')">
+        <button type="button" class="pill pill-dark icon-pill" data-menu="tema" [attr.aria-expanded]="open() === 'tema'" [attr.aria-label]="'Tema: ' + themeLabel()" [attr.title]="'Tema: ' + themeLabel()" (click)="toggle('tema')">
+          @if (theme.theme() === 'dark') {
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" /></svg>
+          } @else {
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4" /><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" /></svg>
+          }
+        </button>
+        @if (open() === 'tema') {
+          <div class="panel right small-panel">
+            @for (o of themeOptions; track o.mode) {
+              <button type="button" class="panel-link" [attr.aria-pressed]="theme.mode() === o.mode" (click)="setTheme(o.mode)">
+                {{ o.label }}
+                @if (theme.mode() === o.mode) { <span class="check" aria-hidden="true">✓</span> }
+              </button>
+            }
+          </div>
+        }
+      </div>
+
+      @if (auth.current(); as me) {
+        <div class="dd user-dd" (mouseenter)="hoverOpen('conta')" (mouseleave)="hoverClose()" (focusout)="focusLeft($event, 'conta')">
+          <button type="button" class="pill pill-dark avatar-pill" data-menu="conta" [attr.aria-expanded]="open() === 'conta'" [attr.aria-label]="'Conta de ' + me.name" (click)="toggle('conta')">
+            <span class="avatar" aria-hidden="true">{{ initials(me.name) }}</span>
+            <span class="pill-label">{{ firstName(me.name) }}</span>
+            <span class="chev" aria-hidden="true"></span>
+          </button>
+          @if (open() === 'conta') {
+            <div class="panel right small-panel">
+              <span class="panel-title">{{ me.email }}</span>
+              <a routerLink="/conta" class="panel-link">Minha conta</a>
+              @if (auth.isStaff()) { <a routerLink="/admin" class="panel-link">Painel admin</a> }
+              @if (auth.isAdmin()) { <a routerLink="/admin/pessoas" class="panel-link">Pessoas e acesso</a> }
+              <button type="button" class="panel-link" (click)="logout()">Sair</button>
+            </div>
+          }
+        </div>
+      } @else {
+        <a routerLink="/entrar" [queryParams]="{ voltar: currentUrl() }" class="pill pill-dark enter">Entrar</a>
+      }
+
+      <button type="button" class="burger" data-menu="mobile" [attr.aria-expanded]="open() === 'mobile'" aria-controls="menu-movel" [attr.aria-label]="open() === 'mobile' ? 'Fechar menu' : 'Abrir menu'" (click)="toggle('mobile')">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </header>
+
+  @if (open() === 'mobile') {
+    <nav class="drawer panel" id="menu-movel" aria-label="Menu">
+      <a routerLink="/" class="panel-link">Início</a>
+      <a routerLink="/apis" class="panel-link">Todas as APIs</a>
+      <a routerLink="/receapitos" class="panel-link">ReceAPItos</a>
+      <a routerLink="/status" class="panel-link">Status</a>
+      @if (auth.current()) {
+        <a routerLink="/conta" class="panel-link">Minha conta</a>
+        @if (auth.isStaff()) { <a routerLink="/admin" class="panel-link">Painel admin</a> }
+        <button type="button" class="panel-link" (click)="logout()">Sair</button>
+      } @else {
+        <a routerLink="/entrar" class="panel-link">Entrar</a>
+        <a routerLink="/cadastro" class="panel-link">Criar conta</a>
+      }
+      <span class="panel-title">Categorias</span>
+      @for (c of categories(); track c.name) {
+        <a class="panel-link" [routerLink]="['/apis']" [queryParams]="{ categoria: c.name }">{{ c.name }} <span class="count">{{ c.count }}</span></a>
+      }
+      <span class="panel-title">APIs</span>
+      @for (a of apis(); track a.id) {
+        <a class="panel-link" [routerLink]="['/apis', a.slug]">{{ a.name }}</a>
+      }
+      <span class="panel-title">Tema</span>
+      <div class="seg" role="group" aria-label="Tema">
+        @for (o of themeOptions; track o.mode) {
+          <button type="button" [attr.aria-pressed]="theme.mode() === o.mode" [class.on]="theme.mode() === o.mode" (click)="theme.setMode(o.mode)">{{ o.label }}</button>
+        }
+      </div>
+    </nav>
+  }
+</div>

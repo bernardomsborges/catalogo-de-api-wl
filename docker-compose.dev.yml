@@ -1,0 +1,20 @@
+# Complemento do docker-compose.yml só para desenvolvimento. Use sempre os dois arquivos:
+#   docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d db mailhog
+#
+# Servidor rodando fora do Docker (npm run dev:server), no .env:
+#   DATABASE_URL=postgres://catalogo:<DB_PASSWORD>@127.0.0.1:5434/catalogo
+#   SMTP_URL=smtp://127.0.0.1:1025
+# Tudo no Docker (sem "db mailhog" no fim do comando): SMTP_URL=smtp://mailhog:1025
+services:
+  # Abre o PostgreSQL só para esta máquina, na porta 5434.
+  db:
+    ports:
+      - "127.0.0.1:5434:5432"
+
+  # Caixa de e-mail de teste em http://localhost:8025.
+  mailhog:
+    image: mailhog/mailhog:v1.0.1
+    ports:
+      - "127.0.0.1:1025:1025"
+      - "127.0.0.1:8025:8025"
+    restart: unless-stopped

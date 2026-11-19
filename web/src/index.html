@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <title>Catálogo de APIs · Automatiza.MG</title>
+  <meta name="description" content="Encontre, entenda e integre as APIs do Automatiza.MG.">
+  <base href="/">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script>
+    // Aplica o tema salvo antes de a página aparecer, para não piscar.
+    try {
+      var t = localStorage.getItem('catalogo-theme');
+      if (t === 'light' || t === 'dark') document.documentElement.dataset.theme = t;
+    } catch (e) {}
+  </script>
+  <link rel="icon" type="image/png" href="favicon.png">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
+  <meta name="theme-color" content="#00183b">
+  <link rel="preload" href="brand/simbolo.webp" as="image" type="image/webp" crossorigin>
+  <style>
+    /* Tela de carregamento: fica por cima até a fonte, o Angular e o catálogo estarem prontos.
+       As cores acompanham o tema (claro/escuro) para não haver salto ao sumir. */
+    #splash {
+      --sp-bg: #f5f8fb; --sp-a: #00183b; --sp-b: #59a1ba; --sp-c: #6a4d9f; --sp-track: #dfe6ee; --sp-text: #5d6c86;
+      position: fixed; inset: 0; z-index: 1000; display: grid; place-items: center; background: var(--sp-bg);
+      transition: opacity .35s ease, visibility .35s ease;
+    }
+    @media (prefers-color-scheme: dark) {
+      html:not([data-theme='light']) #splash { --sp-bg: #000c1d; --sp-a: #2c6f89; --sp-b: #8cc4d8; --sp-c: #a78bdb; --sp-track: #13294a; --sp-text: #7488a6; }
+    }
+    html[data-theme='dark'] #splash { --sp-bg: #000c1d; --sp-a: #2c6f89; --sp-b: #8cc4d8; --sp-c: #a78bdb; --sp-track: #13294a; --sp-text: #7488a6; }
+    #splash.splash-done { opacity: 0; visibility: hidden; }
+    .splash-box { display: flex; flex-direction: column; align-items: center; gap: 22px; }
+    .splash-mark {
+      width: 68px; aspect-ratio: 4308 / 4105;
+      background: linear-gradient(120deg, var(--sp-a), var(--sp-b), var(--sp-c), var(--sp-a)); background-size: 220% 220%;
+      -webkit-mask: url('brand/simbolo.webp') center / contain no-repeat; mask: url('brand/simbolo.webp') center / contain no-repeat;
+      animation: sp-breathe 1.6s ease-in-out infinite, sp-shift 2.4s linear infinite;
+    }
+    .splash-bar { width: 128px; height: 3px; border-radius: 3px; background: var(--sp-track); overflow: hidden; position: relative; }
+    .splash-bar::after {
+      content: ''; position: absolute; inset: 0; width: 40%; border-radius: 3px;
+      background: linear-gradient(90deg, var(--sp-a), var(--sp-b), var(--sp-c)); animation: sp-slide 1.1s ease-in-out infinite;
+    }
+    .splash-text { font: 500 13px/1 system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; color: var(--sp-text); letter-spacing: .02em; }
+    @keyframes sp-breathe { 0%, 100% { transform: scale(1); } 50% { transform: scale(.9); } }
+    @keyframes sp-shift { from { background-position: 0% 50%; } to { background-position: 220% 50%; } }
+    @keyframes sp-slide { 0% { transform: translateX(-100%); } 100% { transform: translateX(250%); } }
+    @media (prefers-reduced-motion: reduce) {
+      .splash-mark, .splash-bar::after { animation: none; }
+      .splash-bar::after { width: 100%; opacity: .5; }
+    }
+  </style>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div id="splash" role="status" aria-live="polite">
+    <div class="splash-box">
+      <span class="splash-mark" aria-hidden="true"></span>
+      <span class="splash-bar" aria-hidden="true"></span>
+      <span class="splash-text">Carregando catálogo…</span>
+    </div>
+  </div>
+  <script>
+    // Garantia: se algo der errado na inicialização, a tela some sozinha depois de 8s.
+    setTimeout(function () { var s = document.getElementById('splash'); if (s) s.classList.add('splash-done'); }, 8000);
+  </script>
+  <app-root></app-root>
+</body>
+</html>

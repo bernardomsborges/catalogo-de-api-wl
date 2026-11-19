@@ -1,0 +1,20 @@
+{
+  // Type checking of the server's JavaScript (PRO-209): `npm run typecheck`, also in the CI.
+  // Nothing is compiled: the server keeps running the .js files as they are.
+  "compilerOptions": {
+    "allowJs": true,
+    "checkJs": true,
+    "noEmit": true,
+    "target": "es2024",
+    "module": "nodenext",
+    "moduleResolution": "nodenext",
+    "types": ["node"],
+    "strict": false,
+    "noImplicitAny": false,
+    "strictNullChecks": false,
+    "skipLibCheck": true,
+    "resolveJsonModule": true,
+    "allowImportingTsExtensions": true
+  },
+  "include": ["src/**/*.js", "src/**/*.d.ts", "test/**/*.js"]
+}

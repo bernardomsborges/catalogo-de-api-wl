@@ -1,0 +1,391 @@
+@if (notFound()) {
+  <div class="container empty-state">
+    <h1>API não encontrada</h1>
+    <p class="muted">Ela pode ter sido removida ou o endereço está incorreto.</p>
+    <a class="btn btn-primary" routerLink="/apis">Voltar ao catálogo</a>
+  </div>
+} @else if (api(); as a) {
+  <section class="api-head">
+    <div class="container">
+      <nav class="crumbs small" aria-label="Navegação estrutural">
+        <a routerLink="/apis">APIs</a> <span aria-hidden="true">/</span> <span>{{ a.category }}</span>
+      </nav>
+      <div class="title-row">
+        <span class="icon" aria-hidden="true">{{ a.name.charAt(0) }}</span>
+        <div class="title-text">
+          <div class="row">
+            <h1>{{ a.name }}</h1>
+            <app-status-badge [status]="a.status" />
+            <span class="tag">v{{ a.version }}</span>
+            @if (a.visibility === 'private') {
+              <span class="tag tag-private" title="Só pessoas com acesso veem a documentação">🔒 Privada</span>
+            }
+            @if (!a.locked && monitored()) {
+              <a routerLink="/status" class="health-link"><app-health-badge [apiId]="a.id" /></a>
+            }
+          </div>
+          <p class="muted summary">{{ a.summary }}</p>
+        </div>
+        @if (!a.locked) {
+        <div class="actions">
+          @if (current() !== 'inicio-rapido') {
+            <a class="btn btn-primary" [routerLink]="['/apis', a.slug, 'inicio-rapido']">Começar agora</a>
+          }
+          <app-follow-api [apiSlug]="a.slug" [apiName]="a.name" />
+        </div>
+        }
+      </div>
+      @if (a.status === 'depreciada') {
+        <div class="alert alert-error banner" role="note">
+          @if (sunset(); as s) {
+            @if (s.daysLeft < 0) {
+              Esta API foi <strong>desligada em {{ s.label }}</strong>.
+            } @else if (s.daysLeft === 0) {
+              Esta API está <strong>depreciada e será desligada hoje</strong>.
+            } @else {
+              Esta API está <strong>depreciada</strong> e será desligada em <strong>{{ s.label }}</strong> ({{ s.daysLeft === 1 ? 'falta 1 dia' : 'faltam ' + s.daysLeft + ' dias' }}).
+            }
+          } @else {
+            Esta API está <strong>depreciada</strong>.
+          }
+          @if (replacement(); as r) {
+            Use a <a [routerLink]="['/apis', r.slug]">API {{ r.name }}</a> no lugar.
+          } @else {
+            Não inicie novas integrações; procure a alternativa recomendada na visão geral.
+          }
+        </div>
+      } @else if (a.status === 'beta' || a.status === 'em-desenvolvimento') {
+        <div class="alert alert-warn banner">Esta API está em <strong>{{ a.status === 'beta' ? 'beta' : 'desenvolvimento' }}</strong> e pode mudar sem aviso prévio.</div>
+      }
+    </div>
+  </section>
+
+  @if (a.locked) {
+    <div class="container locked-wrap"><app-locked-api [api]="a" /></div>
+  } @else {
+  <div class="container docs">
+    <button class="btn menu-toggle" type="button" (click)="menuOpen.set(!menuOpen())" [attr.aria-expanded]="menuOpen()">☰ Menu da documentação</button>
+    <aside #sidenav class="sidenav" [class.open]="menuOpen()" aria-label="Documentação">
+      <a [routerLink]="['/apis', a.slug]" [class.active]="current() === 'visao-geral'">Visão geral</a>
+
+      <span class="group">Guias</span>
+      @for (g of guides(); track g.id) {
+        <a [routerLink]="['/apis', a.slug, g.id]" [class.active]="current() === g.id">{{ g.title }}</a>
+      }
+
+      <span class="group">Referência</span>
+      <a [routerLink]="['/apis', a.slug, 'referencia']" [class.active]="current() === 'referencia' && !activeEp()">Todos os endpoints</a>
+      <a [routerLink]="['/apis', a.slug, 'downloads']" [class.active]="current() === 'downloads'">OpenAPI e coleção Postman</a>
+      @for (group of endpointGroups(); track group.name) {
+        <button class="group-toggle endpoint-nav-group" type="button" [attr.aria-expanded]="isGroupOpen(group.name)" (click)="toggleGroup(group.name)">
+          <span>{{ group.name }}</span><span class="accordion-indicator" aria-hidden="true">{{ isGroupOpen(group.name) ? '−' : '+' }}</span>
+        </button>
+        @if (isGroupOpen(group.name)) {
+          @for (ep of group.endpoints; track ep.id) {
+            <a class="ep-link" [routerLink]="['/apis', a.slug, 'referencia']" [fragment]="epAnchor(ep)" (click)="goToEndpoint(ep)"
+               [attr.data-ep]="epAnchor(ep)" [class.active]="activeEp() === epAnchor(ep)" [attr.aria-current]="activeEp() === epAnchor(ep) ? 'location' : null">
+              <app-method [method]="ep.method" /> <span>{{ ep.summary || ep.path }}</span>
+            </a>
+          }
+        }
+      }
+
+      @if (recipes().length) {
+        <span class="group">ReceAPItos</span>
+        @for (r of recipes(); track r.id) {
+          <a [routerLink]="['/receapitos', r.slug]">{{ r.title }}</a>
+        }
+      }
+
+      @if (a.changelog.length) {
+        <span class="group">Mais</span>
+        <a [routerLink]="['/apis', a.slug, 'changelog']" [class.active]="current() === 'changelog'">Novidades</a>
+      }
+    </aside>
+
+    <div class="content">
+      @switch (current()) {
+        @case ('visao-geral') {
+          <div class="overview">
+            <h2 class="sr-only">Sobre a API</h2>
+            <div class="prose" [innerHTML]="a.description | markdown"></div>
+
+            <h2>Informações</h2>
+            <dl class="facts card">
+              <div><dt>URL base</dt><dd><code>{{ a.baseUrl }}</code> <button class="btn btn-ghost btn-sm" type="button" (click)="copy(a.baseUrl)">Copiar</button></dd></div>
+              <div><dt>Autenticação</dt><dd>{{ authText() }}</dd></div>
+              @if (a.rateLimit) { <div><dt>Limite de uso</dt><dd>{{ a.rateLimit }}</dd></div> }
+              @if (a.sla) { <div><dt>SLA</dt><dd>{{ a.sla }}</dd></div> }
+              @if (a.owner) { <div><dt>Time responsável</dt><dd>{{ a.owner }}</dd></div> }
+              @if (a.contactEmail) { <div><dt>Contato</dt><dd><a [href]="'mailto:' + a.contactEmail">{{ a.contactEmail }}</a></dd></div> }
+              <div><dt>Última atualização</dt><dd>{{ a.updatedAt.slice(0, 10).split('-').reverse().join('/') }}</dd></div>
+              @if (quality() >= completeScore) {
+                <div><dt>Documentação</dt><dd [title]="'Nota da documentação: ' + quality() + ' de 100'"><span class="tag tag-complete">✓ Completa</span></dd></div>
+              }
+            </dl>
+
+            @if (hasAuth()) {
+              <h2>Autenticação</h2>
+              <div class="card auth-card">
+                <p class="auth-intro">
+                  @if (!schemes().length) {
+                    A maioria dos endpoints é pública.
+                  } @else if (schemes().length === 1) {
+                    Envie esta credencial em todas as requisições.
+                  } @else if (a.auth.mode === 'any') {
+                    Envie <strong>uma</strong> destas credenciais (qualquer uma serve).
+                  } @else {
+                    Envie <strong>as {{ schemes().length }} credenciais juntas</strong> em todas as requisições.
+                  }
+                  <a [routerLink]="['/apis', a.slug, 'autenticacao']">Ver o guia de autenticação →</a>
+                </p>
+                <ul class="cred-list">
+                  @for (s of schemes(); track s.key; let i = $index) {
+                    @let w = wire(s);
+                    <li>
+                      @if (a.auth.mode === 'any' && i > 0) { <span class="or">ou</span> }
+                      <div class="cred-head">
+                        <code class="cred-name">{{ w.name }}</code>
+                        <span class="tag">{{ locationLabels[w.in] }}</span>
+                        <span class="small muted">{{ schemeLabels[s.type] }}{{ s.bearerFormat ? ' · ' + s.bearerFormat : '' }}</span>
+                      </div>
+                      @if (s.description) { <p class="small muted cred-desc">{{ s.description }}</p> }
+                      <code class="cred-wire small">{{ w.in === 'header' ? w.name + ': ' + w.value : w.in === 'query' ? '?' + w.name + '=' + w.value : 'Cookie: ' + w.name + '=' + w.value }}</code>
+                    </li>
+                  }
+                </ul>
+                @if (extraSchemes().length) {
+                  <p class="auth-intro extra-intro">Usadas só em alguns endpoints:</p>
+                  <ul class="cred-list">
+                    @for (s of extraSchemes(); track s.key) {
+                      @let w = wire(s);
+                      <li>
+                        <div class="cred-head">
+                          <code class="cred-name">{{ w.name }}</code>
+                          <span class="tag">{{ locationLabels[w.in] }}</span>
+                          <span class="small muted">{{ schemeLabels[s.type] }}{{ s.bearerFormat ? ' · ' + s.bearerFormat : '' }}</span>
+                        </div>
+                        @if (s.description) { <p class="small muted cred-desc">{{ s.description }}</p> }
+                      </li>
+                    }
+                  </ul>
+                }
+              </div>
+            }
+
+            @if (a.environments.length) {
+              <h2>Ambientes</h2>
+              <div class="table-wrap card">
+                <table class="table">
+                  <thead><tr><th>Ambiente</th><th>URL</th></tr></thead>
+                  <tbody>
+                    @for (e of a.environments; track e.url) {
+                      <tr><td>{{ e.name }}</td><td><code>{{ e.url }}</code></td></tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            }
+
+            <!-- PRO-166: contacts are internal, so only people logged in see them. -->
+            @if (consumers(); as list) {
+              <h2>Quem usa esta API</h2>
+              @if (list.length) {
+                <div class="table-wrap card">
+                  <table class="table">
+                    <thead><tr><th>Sistema</th><th>Time e contato</th><th>O que usa</th></tr></thead>
+                    <tbody>
+                      @for (s of list; track s.id) {
+                        <tr>
+                          <td><strong>{{ s.name }}</strong>@if (s.description) { <div class="small muted">{{ s.description }}</div> }</td>
+                          <td class="small">{{ s.owner || '—' }}@if (s.contactEmail) { <div><a [href]="'mailto:' + s.contactEmail">{{ s.contactEmail }}</a></div> }</td>
+                          <td class="small">
+                            @for (r of s.routes; track r) { <div><code>{{ r }}</code></div> } @empty { A API inteira }
+                          </td>
+                        </tr>
+                      }
+                    </tbody>
+                  </table>
+                </div>
+              } @else {
+                <p class="muted">Nenhum sistema cadastrado como consumidor desta API.</p>
+              }
+              @if (canManageSystems()) { <p class="small"><a routerLink="/admin/sistemas">Gerenciar os sistemas consumidores →</a></p> }
+            }
+
+            <h2>Guias</h2>
+            <div class="guide-grid">
+              @for (g of guides(); track g.id) {
+                <a class="card guide-card" [routerLink]="['/apis', a.slug, g.id]">
+                  <strong>{{ g.title }}</strong>
+                  <span class="muted small">{{ g.description }}</span>
+                  @if (g.generated) { <span class="auto small">Gerado automaticamente</span> }
+                </a>
+              }
+            </div>
+
+            <h2>Endpoints</h2>
+            <div class="card ep-list">
+              @for (group of endpointGroups(); track group.name) {
+                <section class="ep-list-group">
+                  <h3>{{ group.name }}</h3>
+                  @for (ep of group.endpoints; track ep.id) {
+                    <a [routerLink]="['/apis', a.slug, 'referencia']" [fragment]="epAnchor(ep)" (click)="goToEndpoint(ep)">
+                      <app-method [method]="ep.method" /> <code>{{ ep.path }}</code> <span class="muted">{{ ep.summary }}</span>
+                    </a>
+                  }
+                </section>
+              } @empty {
+                <p class="muted pad">Nenhum endpoint documentado.</p>
+              }
+            </div>
+
+            @if (a.tags.length) {
+              <div class="row tags">
+                @for (t of a.tags; track t) { <span class="tag">#{{ t }}</span> }
+              </div>
+            }
+          </div>
+        }
+
+        @case ('referencia') {
+          <h1 class="page-title">Referência da API</h1>
+          <p class="muted">URL base: <code>{{ a.baseUrl }}</code> · Autenticação: {{ authText() }}</p>
+          @for (group of endpointGroups(); track group.name) {
+            <h2 class="endpoint-group-title">{{ group.name }}</h2>
+            @for (ep of group.endpoints; track ep.id) {
+              <article class="endpoint" [id]="epAnchor(ep)">
+                <div class="ep-doc">
+                  <h3 class="ep-title">{{ ep.summary || ep.path }}</h3>
+                  <div class="ep-path"><app-method [method]="ep.method" /> <code>{{ ep.path }}</code></div>
+                  @if (ep.description) {
+                    <div class="prose" [innerHTML]="ep.description | markdown"></div>
+                  }
+
+                  @let sec = securityOf(ep);
+                  <h4>Autenticação</h4>
+                  @if (!sec.required.length) {
+                    <p class="small"><span class="tag public">Público</span> Este endpoint não exige credencial.</p>
+                  } @else {
+                    <ul class="params">
+                      @for (s of sec.required.concat(sec.alternatives); track s.key; let i = $index) {
+                        @let w = wire(s);
+                        <li>
+                          <div class="param-head">
+                            @if (i > 0 && sec.alternatives.length) { <span class="or">ou</span> }
+                            <code class="pname">{{ w.name }}</code>
+                            <span class="small muted">{{ schemeLabels[s.type] }}</span>
+                            <span class="tag">{{ w.in }}</span>
+                            @if (!sec.alternatives.length) { <span class="req small">obrigatório</span> }
+                          </div>
+                          @if (s.description) { <p class="small">{{ s.description }}</p> }
+                          <p class="small muted">Exemplo: <code>{{ w.value }}</code></p>
+                        </li>
+                      }
+                    </ul>
+                  }
+
+                  @if (ep.parameters.length) {
+                    <h4>Parâmetros</h4>
+                    <ul class="params">
+                      @for (p of ep.parameters; track p.in + p.name) {
+                        <li>
+                          <div class="param-head">
+                            <code class="pname">{{ p.name }}</code>
+                            <span class="small muted">{{ p.type || 'string' }}</span>
+                            <span class="tag">{{ p.in }}</span>
+                            @if (p.required) { <span class="req small">obrigatório</span> }
+                          </div>
+                          @if (p.description) { <p class="small">{{ p.description }}</p> }
+                          @if (p.example) { <p class="small muted">Exemplo: <code>{{ p.example }}</code></p> }
+                        </li>
+                      }
+                    </ul>
+                  }
+
+                  @if (ep.requestBody) {
+                    <h4>Corpo da requisição</h4>
+                    <app-code-tabs [snippets]="[{ lang: 'json', label: 'JSON', code: ep.requestBody }]" title="application/json" />
+                  }
+
+                  @if (ep.responses.length) {
+                    <h4>Respostas</h4>
+                    <ul class="responses">
+                      @for (r of ep.responses; track r.status) {
+                        <li>
+                          <span class="code-status" [class.ok]="r.status < 300" [class.warn]="r.status >= 300 && r.status < 500" [class.bad]="r.status >= 500">{{ r.status }}</span>
+                          <span>{{ r.description }}</span>
+                        </li>
+                      }
+                    </ul>
+                  }
+
+                  <button class="btn btn-sm try-btn" type="button" [attr.aria-expanded]="openTry().has(epAnchor(ep))" (click)="toggleTry(epAnchor(ep))">
+                    {{ openTry().has(epAnchor(ep)) ? 'Fechar console' : '▶ Testar este endpoint' }}
+                  </button>
+                  @if (openTry().has(epAnchor(ep))) {
+                    <app-try-it [api]="a" [endpoint]="ep" />
+                  }
+                </div>
+
+                <div class="ep-code">
+                  <app-code-tabs [snippets]="snippets().get(ep) ?? []" />
+                  @for (r of ep.responses; track r.status) {
+                    @if (r.body) {
+                      <app-code-tabs [snippets]="responseSnippet(r.body, r.status)" />
+                    }
+                  }
+                </div>
+              </article>
+            }
+          } @empty {
+            <p class="muted">Nenhum endpoint documentado.</p>
+          }
+        }
+
+        @case ('downloads') {
+          <h1 class="page-title">OpenAPI e coleção Postman</h1>
+          <p class="muted">Baixe os arquivos para usar esta API nas suas ferramentas.</p>
+
+          <h2 class="dl-title">Especificação OpenAPI</h2>
+          <div class="card dl-card">
+            <button type="button" class="dl-item" (click)="downloadOpenApi()">
+              <span class="dl-label">OpenAPI 3 (JSON)</span>
+              <span class="dl-file">{{ a.slug }}-openapi.json</span>
+            </button>
+          </div>
+
+          <h2 class="dl-title">Coleção para Postman e Insomnia</h2>
+          <app-download-collection [api]="a" />
+        }
+
+        @case ('changelog') {
+          <h1 class="page-title">Novidades</h1>
+          <ol class="timeline">
+            @for (c of a.changelog; track c.version + c.date) {
+              <li>
+                <div class="row"><strong>v{{ c.version }}</strong><span class="muted small">{{ c.date.split('-').reverse().join('/') }}</span></div>
+                <div class="prose" [innerHTML]="c.notes | markdown"></div>
+              </li>
+            }
+          </ol>
+        }
+
+        @default {
+          @if (currentGuide(); as g) {
+            <article class="guide">
+              <span class="eyebrow">{{ g.generated ? 'Guia gerado automaticamente' : 'Guia' }}</span>
+              <h1 class="page-title">{{ g.title }}</h1>
+              <div class="prose" [innerHTML]="g.content | markdown"></div>
+            </article>
+          } @else {
+            <p class="muted">Página não encontrada. <a [routerLink]="['/apis', a.slug]">Voltar à visão geral</a>.</p>
+          }
+        }
+      }
+    </div>
+  </div>
+  }
+} @else {
+  <div class="container empty-state"><p class="muted">Carregando…</p></div>
+}

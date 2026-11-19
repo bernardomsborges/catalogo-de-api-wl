@@ -1,0 +1,90 @@
+# Each PR to main (and each push to main) builds the portal, runs the tests and builds the Docker
+# image. A failure here shows the PR as failed on GitHub. To run the same checks locally, see
+# "Verificações do CI" in the README.
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  testes:
+    name: Build e testes
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    # For the tests that need a real database (e.g. only one copy of the server runs at a time).
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_DB: catalogo
+          POSTGRES_USER: catalogo
+          POSTGRES_PASSWORD: catalogo-ci
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U catalogo -d catalogo"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 20
+    env:
+      TEST_DATABASE_URL: postgres://catalogo:catalogo-ci@127.0.0.1:5432/catalogo
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24 # same as the Dockerfile
+          cache: npm
+          cache-dependency-path: |
+            server/package-lock.json
+            web/package-lock.json
+
+      # Only for the syntax check of the generated Go code (gofmt). bash and Python come with the runner.
+      - uses: actions/setup-go@v6
+        with:
+          go-version: stable
+          cache: false
+
+      - name: Instalar dependências
+        run: |
+          npm ci --prefix server
+          npm ci --prefix web
+
+      - name: Build do portal
+        run: npm run build
+
+      # The server's JavaScript checked by TypeScript (server/tsconfig.json), without compiling anything.
+      - name: Verificação de tipos do servidor
+        run: npm --prefix server run typecheck
+
+      - name: Testes
+        run: npm test
+
+  docker:
+    name: Imagem Docker
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Build da imagem
+        run: docker build -t catalogo-apis:ci .
+
+      - name: A imagem sobe e responde
+        run: |
+          docker run -d --name catalogo -p 3000:3000 -e ADMIN_PASSWORD=senha-so-para-o-ci catalogo-apis:ci
+          for i in $(seq 1 30); do
+            if curl -fsS http://127.0.0.1:3000/healthz > /dev/null; then echo "Respondeu em ${i}s."; exit 0; fi
+            sleep 1
+          done
+          docker logs catalogo
+          exit 1

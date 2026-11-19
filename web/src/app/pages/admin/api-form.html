@@ -1,0 +1,527 @@
+<div class="container page">
+  <div class="row head">
+    <div>
+      <a routerLink="/admin" class="small">← Voltar ao painel</a>
+      <h1>{{ id() ? 'Editar API' : 'Nova API' }}</h1>
+    </div>
+    <span class="spacer"></span>
+    @if (aiEnabled()) {
+      <button class="btn" type="button" (click)="openAgent('api')">✨ Melhorar com IA</button>
+    }
+    <button class="btn" type="button" (click)="openImport()">Importar OpenAPI</button>
+    <button class="btn" type="button" (click)="togglePreview()">{{ preview() ? 'Fechar prévia' : 'Prévia dos guias' }}</button>
+    @if (id()) {
+      <button class="btn" type="button" (click)="saveDraft()" [disabled]="savingDraft() || saving() || loading()">{{ savingDraft() ? 'Salvando…' : 'Salvar rascunho' }}</button>
+      <button class="btn btn-primary" type="button" (click)="save()" [disabled]="saving() || loading()">{{ saving() ? 'Publicando…' : 'Publicar' }}</button>
+    } @else {
+      <button class="btn btn-primary" type="button" (click)="save()" [disabled]="saving() || loading()">{{ saving() ? 'Salvando…' : 'Salvar' }}</button>
+    }
+  </div>
+
+  @if (errors().length) {
+    <div class="alert alert-error" role="alert">
+      <strong>Corrija os itens abaixo antes de salvar:</strong>
+      <ul>@for (e of errors(); track e) { <li>{{ e }}</li> }</ul>
+    </div>
+  }
+  @if (draftInfo(); as d) {
+    <div class="alert alert-warn row draft-banner" role="status">
+      <span>Você está editando um <strong>rascunho</strong> salvo em {{ formatDate(d.updatedAt) }}{{ d.updatedBy ? ' por ' + d.updatedBy : '' }}. O portal mostra a versão {{ published()?.revision }} até você publicar.</span>
+      <span class="spacer"></span>
+      <button class="btn btn-sm" type="button" (click)="discardDraft()">Descartar rascunho</button>
+    </div>
+  }
+  @if (notice()) {
+    <div class="alert alert-ok row" role="status">{{ notice() }} <span class="spacer"></span><button class="btn btn-sm btn-ghost" type="button" (click)="notice.set('')" aria-label="Fechar aviso">×</button></div>
+  }
+  @if (importReview(); as r) {
+    <div class="card import-review">
+      <app-change-review [review]="r" [consumers]="consumers()" title="A especificação importada muda a API assim" p="import-review-" />
+      <p class="hint">A versão e a entrada de Novidades são aplicadas ao salvar.</p>
+    </div>
+  }
+
+  @if (loading()) {
+    <p class="muted">Carregando…</p>
+  } @else {
+    @let q = quality();
+    <div class="layout">
+      <nav class="steps" aria-label="Seções do formulário">
+        @for (s of sections; track s.id) {
+          @if (s.id === 'qualidade') {
+            <button type="button" class="nav-quality" (click)="scrollTo(s.id)">{{ s.label }} <app-quality-score [score]="q.score" /></button>
+          } @else {
+            <button type="button" (click)="scrollTo(s.id)">{{ s.label }}</button>
+          }
+        }
+      </nav>
+
+      <div class="sections">
+        <!-- Qualidade -->
+        <section class="card section" id="qualidade" aria-labelledby="qualidade-title">
+          <app-doc-quality [quality]="q" [ai]="aiEnabled()" (go)="goToField($event)" (improve)="openAgent('api')" />
+        </section>
+
+        <!-- Básico -->
+        <section class="card section" id="basico">
+          <h2>Informações básicas</h2>
+          <div class="grid-2">
+            <div class="field">
+              <label for="name">Nome *</label>
+              <input id="name" [(ngModel)]="m.name" placeholder="Ex.: Notificações" />
+            </div>
+            <div class="field">
+              <label for="slug">Identificador na URL</label>
+              <input id="slug" [(ngModel)]="m.slug" placeholder="gerado a partir do nome" />
+              <span class="hint">/apis/{{ m.slug || 'gerado-do-nome' }}</span>
+            </div>
+          </div>
+          <div class="field">
+            <label for="summary">Resumo *</label>
+            <input id="summary" [(ngModel)]="m.summary" maxlength="200" placeholder="Uma frase que explica para que a API serve" />
+          </div>
+          <div class="field">
+            <label for="desc">Descrição (Markdown)</label>
+            <textarea id="desc" rows="7" [(ngModel)]="m.description" placeholder="Casos de uso, regras de negócio, links úteis…"></textarea>
+          </div>
+          <div class="grid-3">
+            <div class="field">
+              <label for="cat">Categoria</label>
+              <input id="cat" [(ngModel)]="m.category" list="cats" placeholder="Ex.: Automação" />
+              <datalist id="cats">@for (c of categories(); track c) { <option [value]="c"></option> }</datalist>
+            </div>
+            <div class="field">
+              <label for="status">Status</label>
+              <select id="status" [(ngModel)]="m.status">
+                @for (s of statuses; track s[0]) { <option [value]="s[0]">{{ s[1] }}</option> }
+              </select>
+            </div>
+            <div class="field">
+              <label for="version">Versão</label>
+              <input id="version" [(ngModel)]="m.version" placeholder="1.0.0" />
+            </div>
+          </div>
+          @if (m.status === 'depreciada') {
+            <!-- PRO-205: when it stops working and what to use instead. -->
+            <div class="grid-3 deprecation">
+              <div class="field">
+                <label for="sunset">Data de desligamento</label>
+                <input id="sunset" type="date" [(ngModel)]="m.sunsetDate" [min]="today" />
+                <span class="hint">Aparece na página da API e no aviso aos que a acompanham.</span>
+              </div>
+              <div class="field">
+                <label for="replaced">API que a substitui</label>
+                <select id="replaced" [(ngModel)]="m.replacedBy">
+                  <option value="">Nenhuma</option>
+                  @for (a of replacementOptions(); track a.id) { <option [value]="a.id">{{ a.name }}</option> }
+                </select>
+              </div>
+              <div class="field">
+                <span class="label">Quem ainda acompanha</span>
+                <p class="followers">
+                  @if (followers() === null) { — } @else { <strong>{{ followers() }}</strong> {{ followers() === 1 ? 'pessoa recebe' : 'pessoas recebem' }} os avisos desta API }
+                </p>
+              </div>
+            </div>
+          }
+          <div class="grid-3">
+            <div class="field">
+              <label for="owner">Time responsável</label>
+              <input id="owner" [(ngModel)]="m.owner" />
+            </div>
+            <div class="field">
+              <label for="email">E-mail de contato</label>
+              <input id="email" type="email" [(ngModel)]="m.contactEmail" />
+            </div>
+            <div class="field">
+              <label for="tags">Tags</label>
+              <input id="tags" [(ngModel)]="tagsText" placeholder="separadas por vírgula" />
+            </div>
+          </div>
+        </section>
+
+        <!-- Acesso -->
+        <section class="card section" id="acesso">
+          <h2>Acesso e ambientes</h2>
+          <div class="field">
+            <label for="base">URL base *</label>
+            <input id="base" [(ngModel)]="m.baseUrl" placeholder="https://api.automatiza.com.br/minha-api/v1" />
+          </div>
+
+          <div class="sub">
+            <div class="row"><span class="label">Ambientes</span><span class="spacer"></span><button class="btn btn-sm" type="button" (click)="addEnv()">+ Ambiente</button></div>
+            @for (e of m.environments; track $index) {
+              <div class="inline">
+                <input [(ngModel)]="e.name" placeholder="Nome (ex.: Homologação)" aria-label="Nome do ambiente" />
+                <input [(ngModel)]="e.url" placeholder="https://…" aria-label="URL do ambiente" class="grow" />
+                <button class="btn btn-sm btn-danger" type="button" (click)="remove(m.environments, $index)" aria-label="Remover ambiente">×</button>
+              </div>
+            } @empty {
+              <p class="hint">Opcional. Sem ambientes, a URL base é usada em todos os exemplos.</p>
+            }
+          </div>
+
+          <div class="sub">
+            <div class="row">
+              <span class="label">Autenticação</span>
+              <span class="spacer"></span>
+              <button class="btn btn-sm" type="button" (click)="addScheme()">+ Credencial</button>
+            </div>
+            @if (!schemes.length) {
+              <p class="hint">API pública: nenhuma credencial. Adicione uma para cada cabeçalho, token ou chave que o consumidor precisa enviar.</p>
+            } @else {
+              @if (schemes.length > 1) {
+                <div class="seg" appArrowKeys role="radiogroup" aria-label="Como as credenciais são usadas">
+                  <button type="button" role="radio" [class.on]="m.auth.mode !== 'any'" [attr.aria-checked]="m.auth.mode !== 'any'" (click)="m.auth.mode = 'all'">Todas juntas</button>
+                  <button type="button" role="radio" [class.on]="m.auth.mode === 'any'" [attr.aria-checked]="m.auth.mode === 'any'" (click)="m.auth.mode = 'any'">Qualquer uma</button>
+                  <span class="hint">{{ m.auth.mode === 'any' ? 'O consumidor envia só uma delas.' : 'Todas vão em cada requisição (ex.: Client-Id + Client-Secret).' }}</span>
+                </div>
+              }
+              @for (s of schemes; track $index; let si = $index) {
+                <div class="scheme">
+                  <select [(ngModel)]="s.type" (ngModelChange)="onSchemeType(s)" aria-label="Tipo da credencial">
+                    @for (t of schemeTypes; track t[0]) { <option [value]="t[0]">{{ t[1] }}</option> }
+                  </select>
+                  @if (s.type === 'apiKey') {
+                    <input [(ngModel)]="s.name" placeholder="Nome (ex.: X-Client-Id)" aria-label="Nome do cabeçalho/parâmetro" class="mono" />
+                    <select [(ngModel)]="s.in" aria-label="Onde enviar">
+                      <option value="header">cabeçalho</option><option value="query">query</option><option value="cookie">cookie</option>
+                    </select>
+                    <input [(ngModel)]="s.example" placeholder="Exemplo (opcional)" aria-label="Valor de exemplo" />
+                  } @else if (s.type === 'bearer') {
+                    <input [(ngModel)]="s.bearerFormat" placeholder="Formato (ex.: JWT)" aria-label="Formato do token" />
+                    <input [(ngModel)]="s.tokenEndpoint" placeholder="Rota que emite o token (ex.: POST /v1/sessions)" aria-label="Rota que emite o token" class="mono" />
+                    <input [(ngModel)]="s.logoutEndpoint" placeholder="Rota de logout (opcional)" aria-label="Rota que encerra a sessão" class="mono" />
+                  } @else if (s.type === 'oauth2') {
+                    <input [(ngModel)]="s.tokenUrl" placeholder="URL do token" aria-label="URL do token" />
+                    <input [(ngModel)]="s.scopes" placeholder="Escopos (separados por espaço)" aria-label="Escopos" />
+                    <span></span>
+                  } @else {
+                    <span class="hint">Usuário e senha no cabeçalho Authorization.</span><span></span><span></span>
+                  }
+                  <button class="btn btn-sm btn-danger" type="button" (click)="removeScheme(si)" aria-label="Remover credencial">×</button>
+                  @if (schemes.length > 1) {
+                    <label class="check full"><input type="checkbox" [checked]="isDefault(s)" (change)="toggleDefault(s)" /> Usada por padrão em todos os endpoints <span class="hint">(desmarque se só alguns endpoints usam)</span></label>
+                  }
+                  <input class="full" [id]="'sch' + si + '-description'" [(ngModel)]="s.description" placeholder="Descrição (ex.: identifica o sistema cliente)" aria-label="Descrição da credencial" />
+                </div>
+              }
+            }
+          </div>
+          @if (schemes.length) {
+            <div class="field">
+              <label for="authInstr">Como obter a credencial (Markdown)</label>
+              <textarea id="authInstr" rows="3" [(ngModel)]="m.auth.instructions" placeholder="Ex.: solicite acesso pelo portal…"></textarea>
+            </div>
+          }
+          <div class="grid-2">
+            <div class="field">
+              <label for="rate">Limite de uso</label>
+              <input id="rate" [(ngModel)]="m.rateLimit" placeholder="Ex.: 100 requisições/minuto" />
+            </div>
+            <div class="field">
+              <label for="sla">SLA</label>
+              <input id="sla" [(ngModel)]="m.sla" placeholder="Ex.: 99,9% de disponibilidade" />
+            </div>
+          </div>
+        </section>
+
+        <!-- Visibilidade -->
+        <section class="card section" id="visibilidade">
+          <h2>Visibilidade</h2>
+          <div class="vis" appArrowKeys role="radiogroup" aria-label="Quem pode ver a API">
+            <button type="button" role="radio" class="vis-opt" [class.on]="m.visibility !== 'private'" [attr.aria-checked]="m.visibility !== 'private'" (click)="setVisibility('public')">
+              <strong>Pública</strong>
+              <span>Qualquer pessoa vê a documentação completa, mesmo sem entrar.</span>
+            </button>
+            <button type="button" role="radio" class="vis-opt" [class.on]="m.visibility === 'private'" [attr.aria-checked]="m.visibility === 'private'" (click)="setVisibility('private')">
+              <strong>🔒 Privada</strong>
+              <span>Todo mundo vê o nome e o resumo. Documentação, rotas, credenciais e console só para quem tem acesso.</span>
+            </button>
+          </div>
+          @if (m.visibility === 'private') {
+            <fieldset class="vis-groups">
+              <legend>Grupos com acesso</legend>
+              @for (g of groups(); track g.id) {
+                <label class="check"><input type="checkbox" [checked]="hasGroup(g.id)" (change)="toggleGroup(g.id)" /> {{ g.name }} <span class="hint">({{ g.memberCount }} {{ g.memberCount === 1 ? 'pessoa' : 'pessoas' }})</span></label>
+              } @empty {
+                <p class="hint">Nenhum grupo criado ainda.</p>
+              }
+              <p class="hint">
+                Administradores e editores sempre veem as APIs privadas. Quem não tem acesso pode pedir na página da API.
+                @if (auth.isAdmin()) { <a routerLink="/admin/pessoas" [queryParams]="{ aba: 'grupos' }">Gerenciar grupos</a> }
+              </p>
+            </fieldset>
+          }
+        </section>
+
+        <!-- Endpoints -->
+        <section class="card section" id="endpoints">
+          <div class="row"><h2>Endpoints</h2><span class="spacer"></span><button class="btn btn-sm" type="button" (click)="addEndpoint()">+ Endpoint</button></div>
+          <p class="hint">Os exemplos de código e o console de testes são gerados a partir destes dados.</p>
+          <datalist id="ep-groups">@for (g of endpointGroups(); track g) { <option [value]="g"></option> }</datalist>
+
+          @for (ep of m.endpoints; track $index; let i = $index) {
+            <details class="endpoint" [open]="isExpanded(ep)">
+              <summary>
+                <span class="method method-{{ ep.method.toLowerCase() }}">{{ ep.method }}</span>
+                <code>{{ ep.path }}</code>
+                <span class="muted">{{ ep.summary }}</span>
+              </summary>
+              <div class="ep-body">
+                <div class="inline">
+                  <select [(ngModel)]="ep.method" aria-label="Método" class="method-select">
+                    @for (mt of methods; track mt) { <option [value]="mt">{{ mt }}</option> }
+                  </select>
+                  <input [(ngModel)]="ep.path" (blur)="syncPathParams(ep)" placeholder="/recurso/{id}" aria-label="Caminho" class="grow mono" />
+                </div>
+                <div class="grid-2 title-group">
+                  <div class="field">
+                    <label [for]="'eps' + i">Título</label>
+                    <input [id]="'eps' + i" [(ngModel)]="ep.summary" placeholder="Ex.: Listar pedidos" />
+                  </div>
+                  <div class="field">
+                    <label [for]="'ept' + i">Grupo</label>
+                    <input [id]="'ept' + i" [(ngModel)]="ep.tag" list="ep-groups" placeholder="Ex.: Pedidos" />
+                  </div>
+                </div>
+                <div class="field">
+                  <label [for]="'epd' + i">Descrição (Markdown)</label>
+                  <textarea [id]="'epd' + i" rows="3" [(ngModel)]="ep.description"></textarea>
+                </div>
+
+                @if (schemes.length) {
+                  <div class="sub">
+                    <span class="label">Autenticação deste endpoint</span>
+                    <div class="checks">
+                      <label class="check"><input type="checkbox" [checked]="!ep.security" (change)="setEpInherit(ep, $any($event.target).checked)" /> Igual à API</label>
+                      @if (ep.security) {
+                        @for (s of schemes; track $index) {
+                          <label class="check"><input type="checkbox" [checked]="ep.security.includes(s.key)" (change)="toggleEpScheme(ep, s.key)" /> <code>{{ schemeName(s) }}</code></label>
+                        }
+                        @if (!ep.security.length) { <span class="hint">Sem credenciais marcadas: endpoint público.</span> }
+                      }
+                    </div>
+                  </div>
+                }
+
+                <div class="sub">
+                  <div class="row"><span class="label">Parâmetros</span><span class="spacer"></span><button class="btn btn-sm" type="button" (click)="addParam(ep)">+ Parâmetro</button></div>
+                  @for (p of ep.parameters; track $index; let j = $index) {
+                    <div class="param">
+                      <input [(ngModel)]="p.name" placeholder="nome" aria-label="Nome do parâmetro" class="mono" />
+                      <select [(ngModel)]="p.in" aria-label="Local">
+                        <option value="path">path</option><option value="query">query</option><option value="header">header</option>
+                      </select>
+                      <select [(ngModel)]="p.type" aria-label="Tipo">
+                        <option value="string">string</option><option value="integer">integer</option><option value="number">number</option><option value="boolean">boolean</option>
+                      </select>
+                      <input [id]="'epp' + i + '-' + j + '-example'" [(ngModel)]="p.example" placeholder="exemplo" aria-label="Exemplo" />
+                      <label class="check"><input type="checkbox" [(ngModel)]="p.required" /> obrigatório</label>
+                      <button class="btn btn-sm btn-danger" type="button" (click)="remove(ep.parameters, $index)" aria-label="Remover parâmetro">×</button>
+                      <input [id]="'epp' + i + '-' + j + '-description'" [(ngModel)]="p.description" placeholder="descrição" aria-label="Descrição do parâmetro" class="full" />
+                    </div>
+                  }
+                </div>
+
+                @if (ep.method !== 'GET' && ep.method !== 'DELETE') {
+                  <div class="field">
+                    <div class="row"><label [for]="'epb' + i">Exemplo do corpo da requisição (JSON)</label><span class="spacer"></span><button class="btn btn-sm btn-ghost" type="button" (click)="formatJson(ep, 'requestBody')">Formatar</button></div>
+                    <textarea [id]="'epb' + i" class="code" rows="5" [(ngModel)]="ep.requestBody" placeholder='{ "campo": "valor" }'></textarea>
+                  </div>
+                }
+
+                <div class="sub" [id]="'epr' + i">
+                  <div class="row"><span class="label">Respostas</span><span class="spacer"></span><button class="btn btn-sm" type="button" (click)="addResponse(ep)">+ Resposta</button></div>
+                  @for (r of ep.responses; track $index; let k = $index) {
+                    <div class="response">
+                      <div class="inline">
+                        <input type="number" [(ngModel)]="r.status" aria-label="Status HTTP" class="status" />
+                        <input [id]="'epr' + i + '-' + k + '-description'" [(ngModel)]="r.description" placeholder="Descrição" aria-label="Descrição da resposta" class="grow" />
+                        <button class="btn btn-sm btn-ghost" type="button" (click)="formatJson(r, 'body')">Formatar</button>
+                        <button class="btn btn-sm btn-danger" type="button" (click)="remove(ep.responses, $index)" aria-label="Remover resposta">×</button>
+                      </div>
+                      <textarea [id]="'epr' + i + '-' + k + '-body'" class="code" rows="3" [(ngModel)]="r.body" placeholder="Exemplo do corpo (JSON, opcional)" aria-label="Corpo da resposta"></textarea>
+                    </div>
+                  }
+                </div>
+
+                <div class="row ep-actions">
+                  <button class="btn btn-sm" type="button" (click)="move(m.endpoints, i, -1)" [disabled]="i === 0">↑ Subir</button>
+                  <button class="btn btn-sm" type="button" (click)="move(m.endpoints, i, 1)" [disabled]="i === m.endpoints.length - 1">↓ Descer</button>
+                  <button class="btn btn-sm" type="button" (click)="duplicateEndpoint(i)">Duplicar</button>
+                  @if (aiEnabled()) {
+                    <button class="btn btn-sm" type="button" (click)="openAgent(i)">✨ Melhorar com IA</button>
+                  }
+                  <span class="spacer"></span>
+                  <button class="btn btn-sm btn-danger" type="button" (click)="remove(m.endpoints, i)">Remover endpoint</button>
+                </div>
+              </div>
+            </details>
+          } @empty {
+            <div class="empty-box">Nenhum endpoint ainda. Adicione manualmente ou use <strong>Importar OpenAPI</strong>.</div>
+          }
+        </section>
+
+        <!-- Guias -->
+        <section class="card section" id="guias">
+          <div class="row"><h2>Guias personalizados</h2><span class="spacer"></span><button class="btn btn-sm" type="button" (click)="addGuide()">+ Guia</button></div>
+          <p class="hint">Os guias de <strong>Início rápido</strong>, <strong>Autenticação</strong>, <strong>Tratamento de erros</strong> e <strong>Checklist de produção</strong> são gerados automaticamente. Adicione aqui tutoriais específicos do negócio.</p>
+          @for (g of m.guides; track $index) {
+            <div class="sub">
+              <div class="inline">
+                <input [(ngModel)]="g.title" placeholder="Título do guia" aria-label="Título do guia" class="grow" />
+                <button class="btn btn-sm btn-danger" type="button" (click)="remove(m.guides, $index)" aria-label="Remover guia">×</button>
+              </div>
+              <textarea rows="8" [(ngModel)]="g.content" placeholder="Conteúdo em Markdown" aria-label="Conteúdo do guia"></textarea>
+            </div>
+          }
+        </section>
+
+        <!-- Novidades -->
+        <section class="card section" id="novidades">
+          <div class="row"><h2>Novidades</h2><span class="spacer"></span><button class="btn btn-sm" type="button" (click)="addChange()">+ Entrada</button></div>
+          @for (c of m.changelog; track $index) {
+            <div class="sub">
+              <div class="inline">
+                <input [(ngModel)]="c.version" placeholder="versão" aria-label="Versão" class="status" />
+                <input type="date" [(ngModel)]="c.date" aria-label="Data" />
+                <span class="spacer"></span>
+                <button class="btn btn-sm btn-danger" type="button" (click)="remove(m.changelog, $index)" aria-label="Remover entrada">×</button>
+              </div>
+              <textarea rows="2" [(ngModel)]="c.notes" placeholder="O que mudou?" aria-label="Notas"></textarea>
+            </div>
+          } @empty {
+            <p class="hint">Nenhuma entrada.</p>
+          }
+        </section>
+
+        @if (id()) {
+          <!-- Sincronização do OpenAPI -->
+          <section class="card section" id="sincronizacao">
+            <h2>Sincronização do OpenAPI</h2>
+            <p class="hint">
+              O catálogo busca a especificação {{ (sync()?.intervalHours ?? 24) === 24 ? '1 vez por dia' : 'a cada ' + sync()?.intervalHours + ' h' }}
+              e mostra aqui o que mudou. Ao aplicar, guias, categoria, status, ambientes e textos editados à mão são mantidos.
+            </p>
+            <app-spec-auth-fields [config]="syncForm" p="sync-" [storedSecret]="keepsSecret()" urlHint="Deixe em branco para desligar a sincronização." />
+            <div class="row">
+              <button class="btn" type="button" (click)="saveSync()" [disabled]="!!syncBusy()">{{ syncBusy() === 'salvando' ? 'Salvando…' : 'Salvar e sincronizar' }}</button>
+              <button class="btn" type="button" (click)="checkSync()" [disabled]="!!syncBusy() || !sync()?.configured">{{ syncBusy() === 'sincronizando' ? 'Sincronizando…' : 'Sincronizar agora' }}</button>
+              @if (sync()?.lastCheckedAt) {
+                <span class="hint">Última verificação: {{ formatDate(sync()?.lastCheckedAt) }}@if (sync()?.appliedAt) { · aplicada em {{ formatDate(sync()?.appliedAt) }} }</span>
+              }
+            </div>
+            @if (sync()?.lastError) {
+              <div class="alert alert-error small" role="alert">A última busca falhou: {{ sync()?.lastError }}</div>
+            }
+            @if (syncError()) {
+              <div class="alert alert-error small" role="alert">{{ syncError() }}</div>
+            }
+            @if (syncDiff(); as d) {
+              @if (!d.hasChanges) {
+                <div class="alert alert-ok small" role="status">O catálogo está em dia com a especificação.</div>
+              } @else {
+                <div class="sync-diff">
+                  <h3>
+                    Mudanças na especificação
+                    <span class="hint">· {{ sync()?.appliedHash ? 'desde a última aplicação' : 'comparando com o catálogo atual' }}</span>
+                  </h3>
+                  @if (syncReview(); as r) {
+                    <app-change-review [review]="r" [consumers]="consumers()" title="O que muda para quem usa a API" p="sync-review-" />
+                  }
+                  <div class="row">
+                    <button class="btn btn-primary" type="button" (click)="applySync()" [disabled]="!!syncBusy() || saving() || needsConfirmation(syncReview())">
+                      {{ syncBusy() === 'aplicando' ? 'Aplicando…' : 'Aplicar mudanças e salvar' }}
+                    </button>
+                    <span class="hint">{{ needsConfirmation(syncReview()) ? 'Confirme acima para aplicar uma versão que quebra integrações.' : 'Também salva o que você editou neste formulário.' }}</span>
+                  </div>
+                </div>
+              }
+            }
+          </section>
+        }
+
+        @if (id(); as apiId) {
+          <!-- Monitoramento -->
+          <section class="card section" id="monitoramento">
+            <h2>Monitoramento</h2>
+            <app-health-settings [apiId]="apiId" [api]="m" />
+          </section>
+
+          <!-- Histórico -->
+          <section class="card section" id="historico">
+            <h2>Histórico de versões</h2>
+            <p class="hint">Cada publicação vira uma versão. Restaurar publica de novo uma versão antiga, sem apagar as outras.</p>
+            <app-api-history [apiId]="apiId" [current]="published()" (restored)="onRestored($event)" />
+          </section>
+        }
+
+        <div class="row end">
+          <a class="btn" routerLink="/admin">Cancelar</a>
+          @if (id()) {
+            <button class="btn" type="button" (click)="saveDraft()" [disabled]="savingDraft() || saving()">{{ savingDraft() ? 'Salvando…' : 'Salvar rascunho' }}</button>
+            <button class="btn btn-primary" type="button" (click)="save()" [disabled]="saving()">{{ saving() ? 'Publicando…' : 'Publicar' }}</button>
+          } @else {
+            <button class="btn btn-primary" type="button" (click)="save()" [disabled]="saving()">{{ saving() ? 'Salvando…' : 'Salvar API' }}</button>
+          }
+        </div>
+      </div>
+    </div>
+  }
+</div>
+
+@if (agentFor() !== null && agentSession(); as session) {
+  <app-doc-agent [api]="m" [session]="session" [endpoint]="agentFor() === 'api' ? null : $any(agentFor())" [recipes]="recipeCount()" (closed)="agentFor.set(null)"
+                 (changed)="tagsText = m.tags.join(', ')" (go)="agentFor.set(null); goToField($event)" />
+}
+
+@if (importOpen()) {
+  <div class="backdrop" (click)="importOpen.set(false)">
+    <div class="card dialog" appDialog (dismiss)="importOpen.set(false)" role="dialog" aria-modal="true" aria-labelledby="imp-title" (click)="$event.stopPropagation()">
+      <h2 id="imp-title">Importar especificação OpenAPI</h2>
+      <p class="muted small">Aceita OpenAPI 3.x ou Swagger 2.0, em JSON ou YAML. Nome, descrição, ambientes, autenticação e endpoints serão preenchidos; categoria, status, guias e novidades já preenchidos são mantidos.</p>
+      <div class="seg" appArrowKeys role="radiogroup" aria-label="De onde importar">
+        <button type="button" role="radio" [class.on]="importMode() === 'link'" [attr.aria-checked]="importMode() === 'link'" (click)="importMode.set('link')">Link</button>
+        <button type="button" role="radio" [class.on]="importMode() === 'arquivo'" [attr.aria-checked]="importMode() === 'arquivo'" (click)="importMode.set('arquivo')">Arquivo ou texto</button>
+      </div>
+      @if (importMode() === 'link') {
+        <app-spec-auth-fields [config]="importForm" p="imp-" [storedSecret]="importUsesStoredSecret()"
+                              [secretHint]="importKeepSync ? 'Guardado só no servidor quando a API for salva com a sincronização ligada.' : 'Usado só para baixar o documento agora.'" />
+        <label class="check-inline">
+          <input type="checkbox" [(ngModel)]="importKeepSync" />
+          Manter sincronizado com este link <span class="hint">(ligado ao salvar a API)</span>
+        </label>
+      } @else {
+        <input type="file" accept=".json,.yaml,.yml" (change)="onFile($event)" aria-label="Arquivo da especificação" />
+        <textarea class="code" rows="12" [(ngModel)]="importText" placeholder="…ou cole o conteúdo aqui" aria-label="Conteúdo da especificação"></textarea>
+      }
+      @if (importError()) { <div class="alert alert-error" role="alert">{{ importError() }}</div> }
+      <div class="row end">
+        <button class="btn" type="button" (click)="importOpen.set(false)">Cancelar</button>
+        @if (importMode() === 'link') {
+          <button class="btn btn-primary" type="button" (click)="importFromLink()" [disabled]="importing() || !importForm.url.trim()">{{ importing() ? 'Baixando…' : 'Baixar e importar' }}</button>
+        } @else {
+          <button class="btn btn-primary" type="button" (click)="runImport()" [disabled]="!importText.trim()">Importar</button>
+        }
+      </div>
+    </div>
+  </div>
+}
+
+@if (preview(); as guides) {
+  <div class="backdrop" (click)="preview.set(null)">
+    <div class="card dialog wide" appDialog (dismiss)="preview.set(null)" role="dialog" aria-modal="true" aria-label="Prévia dos guias" (click)="$event.stopPropagation()">
+      <div class="row">
+        <div class="tabs">
+          @for (g of guides; track g.id; let i = $index) {
+            <button type="button" [class.active]="previewTab() === i" (click)="previewTab.set(i)">{{ g.title || 'Sem título' }}</button>
+          }
+        </div>
+        <span class="spacer"></span>
+        <button class="btn btn-sm" type="button" (click)="preview.set(null)">Fechar</button>
+      </div>
+      <div class="prose preview" [innerHTML]="guides[previewTab()].content | markdown"></div>
+    </div>
+  </div>
+}

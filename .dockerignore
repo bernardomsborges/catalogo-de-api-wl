@@ -1,0 +1,13 @@
+.git
+.gitignore
+.env
+**/node_modules
+web/dist
+web/.angular
+server/data/apis.json
+server/data/*.tmp
+Dockerfile
+docker-compose.yml
+.dockerignore
+*.md
+server/data/accounts.json

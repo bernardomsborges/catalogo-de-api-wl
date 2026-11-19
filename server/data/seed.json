@@ -1,0 +1,218 @@
+[
+  {
+    "id": "8f1c2a10-0001-4a00-9000-000000000001",
+    "slug": "workflows",
+    "name": "Workflows",
+    "summary": "Crie, dispare e acompanhe automações do Automatiza a partir dos seus sistemas.",
+    "description": "A **API de Workflows** permite que sistemas externos iniciem automações cadastradas no Automatiza e acompanhem a execução em tempo real.\n\n### Casos de uso\n- Disparar um fluxo de aprovação quando um pedido é criado no ERP\n- Consultar o status de uma execução para exibir no seu portal\n- Listar as automações disponíveis para um time\n\n> Exemplo de API cadastrada para demonstração — edite ou remova pelo painel admin.",
+    "category": "Automação",
+    "tags": ["workflows", "execuções", "orquestração"],
+    "status": "estavel",
+    "version": "2.1.0",
+    "owner": "Time de Plataforma",
+    "contactEmail": "plataforma@automatiza.example",
+    "baseUrl": "https://api.automatiza.example/workflows/v2",
+    "environments": [
+      { "name": "Produção", "url": "https://api.automatiza.example/workflows/v2" },
+      { "name": "Homologação", "url": "https://hml-api.automatiza.example/workflows/v2" }
+    ],
+    "auth": {
+      "type": "oauth2",
+      "headerName": "",
+      "tokenUrl": "https://auth.automatiza.example/oauth2/token",
+      "scopes": "workflows:read workflows:execute",
+      "instructions": "Solicite um **client_id** e **client_secret** ao Time de Plataforma pelo portal de acessos."
+    },
+    "rateLimit": "600 requisições/minuto por cliente",
+    "sla": "99,9% de disponibilidade mensal",
+    "endpoints": [
+      {
+        "id": "ep-wf-1",
+        "method": "GET",
+        "path": "/workflows",
+        "summary": "Listar workflows",
+        "description": "Retorna os workflows que o cliente autenticado pode executar.",
+        "parameters": [
+          { "name": "page", "in": "query", "type": "integer", "required": false, "description": "Página (começa em 1).", "example": "1" },
+          { "name": "status", "in": "query", "type": "string", "required": false, "description": "Filtra por status: ativo ou inativo.", "example": "ativo" }
+        ],
+        "requestBody": "",
+        "responses": [
+          { "status": 200, "description": "Lista paginada de workflows.", "body": "{\n  \"data\": [\n    { \"id\": \"wf_123\", \"name\": \"Aprovação de pedido\", \"status\": \"ativo\" }\n  ],\n  \"page\": 1,\n  \"total\": 1\n}" },
+          { "status": 401, "description": "Token ausente ou inválido.", "body": "{ \"error\": \"unauthorized\" }" }
+        ]
+      },
+      {
+        "id": "ep-wf-2",
+        "method": "POST",
+        "path": "/workflows/{workflowId}/executions",
+        "summary": "Disparar execução",
+        "description": "Inicia uma nova execução do workflow com os dados de entrada informados. A execução é assíncrona: use o endpoint de consulta para acompanhar.",
+        "parameters": [
+          { "name": "workflowId", "in": "path", "type": "string", "required": true, "description": "Identificador do workflow.", "example": "wf_123" },
+          { "name": "Idempotency-Key", "in": "header", "type": "string", "required": false, "description": "Chave para evitar execuções duplicadas.", "example": "pedido-9876" }
+        ],
+        "requestBody": "{\n  \"input\": {\n    \"pedidoId\": \"9876\",\n    \"valor\": 1500.0\n  }\n}",
+        "responses": [
+          { "status": 202, "description": "Execução aceita.", "body": "{\n  \"executionId\": \"ex_456\",\n  \"status\": \"em_andamento\"\n}" },
+          { "status": 404, "description": "Workflow não encontrado.", "body": "{ \"error\": \"workflow_not_found\" }" },
+          { "status": 422, "description": "Dados de entrada inválidos.", "body": "{ \"error\": \"invalid_input\", \"fields\": [\"valor\"] }" }
+        ]
+      },
+      {
+        "id": "ep-wf-3",
+        "method": "GET",
+        "path": "/executions/{executionId}",
+        "summary": "Consultar execução",
+        "description": "Retorna o status atual e o resultado de uma execução.",
+        "parameters": [
+          { "name": "executionId", "in": "path", "type": "string", "required": true, "description": "Identificador da execução.", "example": "ex_456" }
+        ],
+        "requestBody": "",
+        "responses": [
+          { "status": 200, "description": "Execução encontrada.", "body": "{\n  \"executionId\": \"ex_456\",\n  \"status\": \"concluida\",\n  \"output\": { \"aprovado\": true }\n}" }
+        ]
+      }
+    ],
+    "guides": [
+      {
+        "title": "Disparando um workflow a partir do ERP",
+        "content": "1. Obtenha um token OAuth2 com o escopo `workflows:execute`.\n2. Chame `POST /workflows/{workflowId}/executions` enviando os dados do pedido.\n3. Guarde o `executionId` retornado.\n4. Consulte `GET /executions/{executionId}` até o status ser `concluida` ou `falhou`.\n\n**Dica:** envie o cabeçalho `Idempotency-Key` com o número do pedido para não disparar o fluxo duas vezes."
+      }
+    ],
+    "changelog": [
+      { "version": "2.1.0", "date": "2026-09-15", "notes": "Novo cabeçalho Idempotency-Key no disparo de execuções." },
+      { "version": "2.0.0", "date": "2026-03-01", "notes": "Migração para OAuth2 e paginação padronizada." }
+    ],
+    "createdAt": "2026-01-10T12:00:00.000Z",
+    "updatedAt": "2026-09-15T12:00:00.000Z"
+  },
+  {
+    "id": "8f1c2a10-0002-4a00-9000-000000000002",
+    "slug": "notificacoes",
+    "name": "Notificações",
+    "summary": "Envie e-mails, SMS e mensagens push com templates centralizados.",
+    "description": "A **API de Notificações** centraliza o envio de mensagens transacionais usando templates aprovados.\n\n> Exemplo de API cadastrada para demonstração.",
+    "category": "Comunicação",
+    "tags": ["e-mail", "sms", "push"],
+    "status": "estavel",
+    "version": "1.4.0",
+    "owner": "Time de Comunicação",
+    "contactEmail": "comunicacao@automatiza.example",
+    "baseUrl": "https://api.automatiza.example/notificacoes/v1",
+    "environments": [
+      { "name": "Produção", "url": "https://api.automatiza.example/notificacoes/v1" },
+      { "name": "Sandbox", "url": "https://sandbox.automatiza.example/notificacoes/v1" }
+    ],
+    "auth": { "type": "apiKey", "headerName": "X-API-Key", "tokenUrl": "", "scopes": "", "instructions": "Gere a chave no painel do Automatiza em **Configurações → Chaves de API**." },
+    "rateLimit": "100 requisições/segundo",
+    "sla": "99,5% de disponibilidade mensal",
+    "endpoints": [
+      {
+        "id": "ep-nt-1",
+        "method": "POST",
+        "path": "/mensagens",
+        "summary": "Enviar mensagem",
+        "description": "Envia uma mensagem usando um template cadastrado.",
+        "parameters": [],
+        "requestBody": "{\n  \"canal\": \"email\",\n  \"template\": \"boas-vindas\",\n  \"destinatario\": \"cliente@exemplo.com\",\n  \"variaveis\": { \"nome\": \"Maria\" }\n}",
+        "responses": [
+          { "status": 201, "description": "Mensagem enfileirada.", "body": "{ \"id\": \"msg_789\", \"status\": \"enfileirada\" }" },
+          { "status": 400, "description": "Template ou canal inválido.", "body": "{ \"error\": \"invalid_template\" }" }
+        ]
+      },
+      {
+        "id": "ep-nt-2",
+        "method": "GET",
+        "path": "/mensagens/{id}",
+        "summary": "Consultar mensagem",
+        "description": "Retorna o status de entrega da mensagem.",
+        "parameters": [
+          { "name": "id", "in": "path", "type": "string", "required": true, "description": "Identificador da mensagem.", "example": "msg_789" }
+        ],
+        "requestBody": "",
+        "responses": [
+          { "status": 200, "description": "Mensagem encontrada.", "body": "{ \"id\": \"msg_789\", \"status\": \"entregue\" }" }
+        ]
+      }
+    ],
+    "guides": [],
+    "changelog": [{ "version": "1.4.0", "date": "2026-08-02", "notes": "Suporte a mensagens push." }],
+    "createdAt": "2026-02-01T12:00:00.000Z",
+    "updatedAt": "2026-08-02T12:00:00.000Z"
+  },
+  {
+    "id": "8f1c2a10-0003-4a00-9000-000000000003",
+    "slug": "documentos-ocr",
+    "name": "Documentos e OCR",
+    "summary": "Extraia dados de notas fiscais, contratos e documentos pessoais.",
+    "description": "Envie um arquivo e receba os campos extraídos em JSON estruturado.\n\n> Exemplo de API cadastrada para demonstração.",
+    "category": "Dados e Documentos",
+    "tags": ["ocr", "nota fiscal", "extração"],
+    "status": "beta",
+    "version": "0.9.0",
+    "owner": "Time de Inteligência",
+    "contactEmail": "ia@automatiza.example",
+    "baseUrl": "https://api.automatiza.example/documentos/v1",
+    "environments": [],
+    "auth": { "type": "bearer", "headerName": "", "tokenUrl": "", "scopes": "", "instructions": "Use o token pessoal gerado no seu perfil do Automatiza." },
+    "rateLimit": "30 requisições/minuto",
+    "sla": "Sem SLA durante o beta",
+    "endpoints": [
+      {
+        "id": "ep-doc-1",
+        "method": "POST",
+        "path": "/extracoes",
+        "summary": "Extrair dados de documento",
+        "description": "Recebe a URL de um documento e retorna os campos identificados.",
+        "parameters": [
+          { "name": "tipo", "in": "query", "type": "string", "required": true, "description": "Tipo do documento: nfe, contrato ou rg.", "example": "nfe" }
+        ],
+        "requestBody": "{\n  \"arquivoUrl\": \"https://storage.exemplo.com/nota.pdf\"\n}",
+        "responses": [
+          { "status": 200, "description": "Campos extraídos.", "body": "{\n  \"tipo\": \"nfe\",\n  \"campos\": { \"cnpjEmitente\": \"00.000.000/0001-00\", \"valorTotal\": 350.9 },\n  \"confianca\": 0.97\n}" }
+        ]
+      }
+    ],
+    "guides": [],
+    "changelog": [],
+    "createdAt": "2026-06-20T12:00:00.000Z",
+    "updatedAt": "2026-06-20T12:00:00.000Z"
+  },
+  {
+    "id": "8f1c2a10-0004-4a00-9000-000000000004",
+    "slug": "cadastro-legado",
+    "name": "Cadastro Legado",
+    "summary": "API antiga de cadastro de clientes. Use a API de Clientes v2.",
+    "description": "Esta API será desligada em **31/03/2027**.\n\n> Exemplo de API cadastrada para demonstração.",
+    "category": "Cadastros",
+    "tags": ["clientes"],
+    "status": "depreciada",
+    "version": "1.0.3",
+    "owner": "Time de Cadastros",
+    "contactEmail": "cadastros@automatiza.example",
+    "baseUrl": "https://legado.automatiza.example/cadastro",
+    "environments": [],
+    "auth": { "type": "basic", "headerName": "", "tokenUrl": "", "scopes": "", "instructions": "" },
+    "rateLimit": "",
+    "sla": "",
+    "endpoints": [
+      {
+        "id": "ep-leg-1",
+        "method": "GET",
+        "path": "/clientes/{cpf}",
+        "summary": "Buscar cliente por CPF",
+        "description": "",
+        "parameters": [
+          { "name": "cpf", "in": "path", "type": "string", "required": true, "description": "CPF somente com números.", "example": "12345678900" }
+        ],
+        "requestBody": "",
+        "responses": [{ "status": 200, "description": "Cliente encontrado.", "body": "{ \"nome\": \"João\", \"cpf\": \"12345678900\" }" }]
+      }
+    ],
+    "guides": [],
+    "changelog": [],
+    "createdAt": "2025-05-01T12:00:00.000Z",
+    "updatedAt": "2025-05-01T12:00:00.000Z"
+  }
+]
